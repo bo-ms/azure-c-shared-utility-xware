@@ -31,11 +31,11 @@ extern void (*platform_driver_get())(NX_IP_DRIVER *);
 #endif /* XWARE_IP_STACK_SIZE  */
 
 #ifndef XWARE_PACKET_COUNT
-#define XWARE_PACKET_COUNT            	(20)
+#define XWARE_PACKET_COUNT            	(32)
 #endif /* XWARE_PACKET_COUNT  */
 
 #ifndef XWARE_PACKET_SIZE
-#define XWARE_PACKET_SIZE             	(1536) /* 1536 is normal Ethernet frame PDU rounded to 32-byte alignment. */
+#define XWARE_PACKET_SIZE             	(576)
 #endif /* XWARE_PACKET_SIZE  */
 
 #define XWARE_POOL_SIZE               	((XWARE_PACKET_SIZE + sizeof(NX_PACKET)) * XWARE_PACKET_COUNT)
