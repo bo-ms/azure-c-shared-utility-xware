@@ -81,8 +81,13 @@ static void 							wait_dhcp(void);
 
 #ifndef XWARE_GATEWAY_ADDRESS
 //#define XWARE_GATEWAY_ADDRESS         IP_ADDRESS(192, 168, 100, 1)
-#error "SYMBOL XWARE_GATEWAY_ADDRESS must be defined. This symbol specifies the gateway/dns server address for routing. "
+#error "SYMBOL XWARE_GATEWAY_ADDRESS must be defined. This symbol specifies the gateway address for routing. "
 #endif /* XWARE_GATEWAY_ADDRESS */
+
+#ifndef XWARE_DNS_SERVER_ADDRESS
+//#define XWARE_DNS_SERVER_ADDRESS         IP_ADDRESS(192, 168, 100, 1)
+#error "SYMBOL XWARE_DNS_SERVER_ADDRESS must be defined. This symbol specifies the dns server address for routing. "
+#endif /* XWARE_DNS_SERVER_ADDRESS */
 
 #endif /* XWARE_DHCP_DISABLE  */
 
@@ -190,7 +195,14 @@ ULONG   gateway_address;
            (gateway_address & 0xFF));
 	
 	/* Ceate dns.  */
-	status = dns_create(gateway_address);
+#ifndef XWARE_DHCP_DISABLE
+    ULONG   dns_server_address;
+    UINT dns_server_address_size = 4;
+    status = nx_dhcp_interface_user_option_retrieve(&dhcp_client, 0, NX_DHCP_OPTION_DNS_SVR, (UCHAR *)(&dns_server_address), &dns_server_address_size); 
+	status += dns_create(dns_server_address);
+#else
+	status = dns_create(XWARE_DNS_SERVER_ADDRESS);
+#endif
 	if (status)
 	{
         printf("XWARE platform initialize fail: DNS CREATE FAIL.\r\n");
@@ -283,7 +295,14 @@ UINT	status;
     }
 	
 	/* Record the dns client, it will be used in socketio_xware.c  */
-	_xware_dns_client_created_ptr = &dns_client;
-	
+	_xware_dns_client_created_ptr = &dns_client;	
+    
+    /* Output DNS Server address.  */
+    printf("DNS Server address: %d.%d.%d.%d\n",
+           (dns_server_address >> 24),
+           (dns_server_address >> 16 & 0xFF),
+           (dns_server_address >> 8 & 0xFF),
+           (dns_server_address & 0xFF));
+    
 	return(0);
 }
