@@ -14,7 +14,6 @@
 #include "nx_ip.h"
 #include "nxd_dns.h"
 #include "nx_secure_tls_api.h"
-#include "config_xware.h"
 #include "azure_c_shared_utility/socketio.h"
 #include "azure_c_shared_utility/singlylinkedlist.h"
 #include "azure_c_shared_utility/tcpsocketconnection_c.h"

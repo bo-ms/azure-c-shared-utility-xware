@@ -8,13 +8,28 @@
 /* This file is used for porting threadapi between X-Ware IoT Platform and azure-iot-sdk-c.  */
 
 #include "tx_api.h"
-#include "config_xware.h"
 #include "azure_c_shared_utility/threadapi.h"
 #include "azure_c_shared_utility/xlogging.h"
 
 MU_DEFINE_ENUM_STRINGS(THREADAPI_RESULT, THREADAPI_RESULT_VALUES);
 
 /* Define the resources needed by the X-Ware IoT Platform for the Azure SDK porting layer.  */
+
+/* Define the amount of memory for the memory pool ThreadX will utilize for the Azure porting layer. 
+   The user can override this via -D command line option or via project settings. */
+#ifndef XWARE_AZURE_SDK_MEMORY_POOL_SIZE
+#define XWARE_AZURE_SDK_MEMORY_POOL_SIZE    8192
+#endif /* XWARE_AZURE_SDK_MEMORY_POOL_SIZE */
+
+/* Define the default thread attributes, priority, stack size, etc.  The user can override this 
+   via -D command line option or via project settings.  */
+#ifndef XWARE_AZURE_SDK_THREAD_PRIORITY
+#define XWARE_AZURE_SDK_THREAD_PRIORITY     16
+#endif /* XWARE_AZURE_SDK_MEMORY_POOL_SIZE */
+
+#ifndef XWARE_AZURE_SDK_THREAD_STACK_SIZE
+#define XWARE_AZURE_SDK_THREAD_STACK_SIZE   2048
+#endif /* XWARE_AZURE_SDK_MEMORY_POOL_SIZE */
 
 /* Define the Azure thread structure for running on ThreadX (X-Ware IoT Platform).  */
 

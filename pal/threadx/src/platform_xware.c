@@ -10,13 +10,9 @@
 #include "nx_api.h"
 #include "nx_secure_tls_api.h"
 #include "nxd_dns.h"
-#include "config_xware.h"
 #include "azure_c_shared_utility/platform.h"
-#include "azure_c_shared_utility/optimize_size.h"
 #include "azure_c_shared_utility/xio.h"
-#include "azure_c_shared_utility/strings.h"
 #include "azure_c_shared_utility/xlogging.h"
-#include "azure_c_shared_utility/tlsio_schannel.h"
 
 extern const IO_INTERFACE_DESCRIPTION* tlsio_xware_tls_get_interface_description(void);
 extern void xware_azure_sdk_initialize(void);
