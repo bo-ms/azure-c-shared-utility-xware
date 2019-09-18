@@ -109,7 +109,7 @@ ULONG   gateway_address;
     /* Check for pool creation error.  */
     if (status)
     {
-        printf("XWARE platform initialize fail: PACKET POOL CREATE FAIL.\r\n");
+        LogError("XWARE platform initialize fail: PACKET POOL CREATE FAIL.");
         return(status);
     }
 
@@ -121,7 +121,7 @@ ULONG   gateway_address;
     /* Check for IP create errors.  */
     if (status)
     {
-	  	printf("XWARE platform initialize fail: IP CREATE FAIL.\r\n");
+	  	LogError("XWARE platform initialize fail: IP CREATE FAIL.");
         return(status);
     }	
 	
@@ -131,7 +131,7 @@ ULONG   gateway_address;
     /* Check for ARP enable errors.  */
     if (status)
     {
-	  	printf("XWARE platform initialize fail: ARP ENABLE FAIL .\r\n");
+	  	LogError("XWARE platform initialize fail: ARP ENABLE FAIL.");
         return(status);
     }
 
@@ -141,7 +141,7 @@ ULONG   gateway_address;
     /* Check for ICMP enable errors.  */
     if (status)
     {
-	  	printf("XWARE platform initialize fail: ICMP ENABLE FAIL.\r\n");
+	  	LogError("XWARE platform initialize fail: ICMP ENABLE FAIL.");
         return(status);
     }
 	
@@ -151,7 +151,7 @@ ULONG   gateway_address;
     /* Check for TCP enable errors.  */
     if (status)
     {
-	  	printf("XWARE platform initialize fail: TCP ENABLE FAIL.\r\n");
+	  	LogError("XWARE platform initialize fail: TCP ENABLE FAIL.");
         return(status);
     }
 
@@ -161,7 +161,7 @@ ULONG   gateway_address;
     /* Check for UDP enable errors.  */
     if (status)
     {
-	  	printf("XWARE platform initialize fail: UDP ENABLE FAIL.\r\n");
+	  	LogError("XWARE platform initialize fail: UDP ENABLE FAIL.");
         return(status);
     }
 
@@ -176,15 +176,17 @@ ULONG   gateway_address;
     nx_ip_gateway_address_get(&ip_0, &gateway_address);
 
     /* Output IP address and gateway address. */
-    printf("IP address: %d.%d.%d.%d\nMask: %d.%d.%d.%d\nGateway: %d.%d.%d.%d\n",
+    LogInfo("IP address: %d.%d.%d.%d",
            (ip_address >> 24),
            (ip_address >> 16 & 0xFF),
            (ip_address >> 8 & 0xFF),
-           (ip_address & 0xFF),
+           (ip_address & 0xFF));
+    LogInfo("Mask: %d.%d.%d.%d",
            (network_mask >> 24),
            (network_mask >> 16 & 0xFF),
            (network_mask >> 8 & 0xFF),
-           (network_mask & 0xFF),
+           (network_mask & 0xFF));
+    LogInfo("Gateway: %d.%d.%d.%d",
            (gateway_address >> 24),
            (gateway_address >> 16 & 0xFF),
            (gateway_address >> 8 & 0xFF),
@@ -201,7 +203,7 @@ ULONG   gateway_address;
 #endif
 	if (status)
 	{
-        printf("XWARE platform initialize fail: DNS CREATE FAIL.\r\n");
+        LogError("XWARE platform initialize fail: DNS CREATE FAIL.");
         return(status);
 	}
 	
@@ -243,7 +245,7 @@ static void wait_dhcp(void)
 
 ULONG   actual_status;
 
-    printf("DHCP In Progress...\n");
+    LogInfo("DHCP In Progress...");
 
     /* Create the DHCP instance.  */
     nx_dhcp_create(&dhcp_client, &ip_0, "dhcp_client");
@@ -294,7 +296,7 @@ UINT	status;
 	_xware_dns_client_created_ptr = &dns_client;	
     
     /* Output DNS Server address.  */
-    printf("DNS Server address: %d.%d.%d.%d\n",
+    LogInfo("DNS Server address: %d.%d.%d.%d\r\n",
            (dns_server_address >> 24),
            (dns_server_address >> 16 & 0xFF),
            (dns_server_address >> 8 & 0xFF),
