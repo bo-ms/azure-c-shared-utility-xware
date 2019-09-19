@@ -22,8 +22,8 @@
 
 #define UNABLE_TO_COMPLETE -2
 
-NX_TCP_SOCKET *_xware_tcp_socket_created_ptr; 	/* XWARE TCP Socket.  */
-extern NX_DNS *_xware_dns_client_created_ptr;	/* XWARE DNS Client.  */
+NX_TCP_SOCKET *_xware_tcp_socket_created_ptr;   /* XWARE TCP Socket.  */
+extern NX_DNS *_xware_dns_client_created_ptr;   /* XWARE DNS Client.  */
 
 typedef enum IO_STATE_TAG
 {

@@ -23,21 +23,21 @@ extern void (*platform_driver_get())(NX_IP_DRIVER *);
    via -D command line option or via project settings.  */
 
 #ifndef XWARE_IP_STACK_SIZE
-#define XWARE_IP_STACK_SIZE         	(2048)
+#define XWARE_IP_STACK_SIZE             (2048)
 #endif /* XWARE_IP_STACK_SIZE  */
 
 #ifndef XWARE_PACKET_COUNT
-#define XWARE_PACKET_COUNT            	(32)
+#define XWARE_PACKET_COUNT              (32)
 #endif /* XWARE_PACKET_COUNT  */
 
 #ifndef XWARE_PACKET_SIZE
-#define XWARE_PACKET_SIZE             	(576)
+#define XWARE_PACKET_SIZE               (576)
 #endif /* XWARE_PACKET_SIZE  */
 
-#define XWARE_POOL_SIZE               	((XWARE_PACKET_SIZE + sizeof(NX_PACKET)) * XWARE_PACKET_COUNT)
+#define XWARE_POOL_SIZE                 ((XWARE_PACKET_SIZE + sizeof(NX_PACKET)) * XWARE_PACKET_COUNT)
 
 #ifndef XWARE_ARP_CACHE_SIZE
-#define XWARE_ARP_CACHE_SIZE          	512
+#define XWARE_ARP_CACHE_SIZE            512
 #endif /* XWARE_ARP_CACHE_SIZE  */
 
 
@@ -48,20 +48,20 @@ static UCHAR xware_arp_cache_area[XWARE_ARP_CACHE_SIZE];
 
 
 /* Define the prototypes for XWARE.  */
-NX_PACKET_POOL       					pool_0;
-NX_IP                					ip_0;
-NX_DNS     								dns_client;
-NX_DNS 									*_xware_dns_client_created_ptr;
+NX_PACKET_POOL                          pool_0;
+NX_IP                                   ip_0;
+NX_DNS                                  dns_client;
+NX_DNS                                  *_xware_dns_client_created_ptr;
 
 
 #ifndef XWARE_DHCP_DISABLE
 
 #include "nxd_dhcp_client.h"
-static NX_DHCP           				dhcp_client;
-static void 							wait_dhcp(void);
+static NX_DHCP                          dhcp_client;
+static void                             wait_dhcp(void);
 
-#define XWARE_IPV4_ADDRESS     		  	IP_ADDRESS(0, 0, 0, 0)
-#define XWARE_IPV4_MASK  			  	IP_ADDRESS(0, 0, 0, 0)
+#define XWARE_IPV4_ADDRESS              IP_ADDRESS(0, 0, 0, 0)
+#define XWARE_IPV4_MASK                 IP_ADDRESS(0, 0, 0, 0)
 
 #else
 
@@ -87,13 +87,13 @@ static void 							wait_dhcp(void);
 
 #endif /* XWARE_DHCP_DISABLE  */
 
-static UINT	dns_create(ULONG dns_server_address);
+static UINT dns_create(ULONG dns_server_address);
 
 
 int platform_init(void)
 {
 
-UINT 	status;
+UINT    status;
 ULONG   ip_address;
 ULONG   network_mask;
 ULONG   gateway_address;
@@ -121,17 +121,17 @@ ULONG   gateway_address;
     /* Check for IP create errors.  */
     if (status)
     {
-	  	LogError("XWARE platform initialize fail: IP CREATE FAIL.");
+        LogError("XWARE platform initialize fail: IP CREATE FAIL.");
         return(status);
-    }	
-	
+    }
+
     /* Enable ARP and supply ARP cache memory for IP Instance 0.  */
     status = nx_arp_enable(&ip_0, (VOID *)xware_arp_cache_area, XWARE_ARP_CACHE_SIZE);
 
     /* Check for ARP enable errors.  */
     if (status)
     {
-	  	LogError("XWARE platform initialize fail: ARP ENABLE FAIL.");
+        LogError("XWARE platform initialize fail: ARP ENABLE FAIL.");
         return(status);
     }
 
@@ -141,17 +141,17 @@ ULONG   gateway_address;
     /* Check for ICMP enable errors.  */
     if (status)
     {
-	  	LogError("XWARE platform initialize fail: ICMP ENABLE FAIL.");
+        LogError("XWARE platform initialize fail: ICMP ENABLE FAIL.");
         return(status);
     }
-	
+
     /* Enable TCP traffic.  */
     status = nx_tcp_enable(&ip_0);
 
     /* Check for TCP enable errors.  */
     if (status)
     {
-	  	LogError("XWARE platform initialize fail: TCP ENABLE FAIL.");
+        LogError("XWARE platform initialize fail: TCP ENABLE FAIL.");
         return(status);
     }
 
@@ -161,7 +161,7 @@ ULONG   gateway_address;
     /* Check for UDP enable errors.  */
     if (status)
     {
-	  	LogError("XWARE platform initialize fail: UDP ENABLE FAIL.");
+        LogError("XWARE platform initialize fail: UDP ENABLE FAIL.");
         return(status);
     }
 
@@ -170,7 +170,7 @@ ULONG   gateway_address;
 #else
     nx_ip_gateway_address_set(&ip_0, XWARE_GATEWAY_ADDRESS);
 #endif /* XWARE_DHCP_DISABLE  */
-	
+
     /* Get IP address and gateway address. */
     nx_ip_address_get(&ip_0, &ip_address, &network_mask);
     nx_ip_gateway_address_get(&ip_0, &gateway_address);
@@ -191,28 +191,28 @@ ULONG   gateway_address;
            (gateway_address >> 16 & 0xFF),
            (gateway_address >> 8 & 0xFF),
            (gateway_address & 0xFF));
-	
-	/* Ceate dns.  */
+
+    /* Ceate dns.  */
 #ifndef XWARE_DHCP_DISABLE
     ULONG   dns_server_address;
     UINT dns_server_address_size = 4;
     status = nx_dhcp_interface_user_option_retrieve(&dhcp_client, 0, NX_DHCP_OPTION_DNS_SVR, (UCHAR *)(&dns_server_address), &dns_server_address_size); 
-	status += dns_create(dns_server_address);
+    status += dns_create(dns_server_address);
 #else
-	status = dns_create(XWARE_DNS_SERVER_ADDRESS);
+    status = dns_create(XWARE_DNS_SERVER_ADDRESS);
 #endif
-	if (status)
-	{
+    if (status)
+    {
         LogError("XWARE platform initialize fail: DNS CREATE FAIL.");
         return(status);
-	}
-	
+    }
+
     /* Initialize TLS.  */
     nx_secure_tls_initialize();
-	
+
     /* Initialize XWARE Azure SDK.  */
     xware_azure_sdk_initialize();
-	
+
     return 0;
 }
 
@@ -228,8 +228,8 @@ STRING_HANDLE platform_get_platform_info(PLATFORM_INFO_OPTION options)
     (void)options;
 
     // Expected format: "(<runtime name>; <operating system name>; <platform>)"
-	
-  	return STRING_construct("(native; ThreadX; XWARE)");
+
+    return STRING_construct("(native; ThreadX; XWARE)");
 }
 
 void platform_deinit(void)
@@ -259,16 +259,16 @@ ULONG   actual_status;
 #endif /* XWARE_DHCP_DISABLE  */
 
 
-static UINT	dns_create(ULONG dns_server_address)
+static UINT dns_create(ULONG dns_server_address)
 {
       
-UINT	status; 
+UINT    status; 
  
     /* Create a DNS instance for the Client.  Note this function will create
        the DNS Client packet pool for creating DNS message packets intended
        for querying its DNS server. */
     status = nx_dns_create(&dns_client, &ip_0, (UCHAR *)"DNS Client");
-	if (status)
+    if (status)
     {
         return(status);
     }
@@ -279,7 +279,7 @@ UINT	status;
     /* Yes, use the packet pool created above which has appropriate payload size
        for DNS messages. */
     status = nx_dns_packet_pool_set(&dns_client, ip_0.nx_ip_default_packet_pool);
-	if (status)
+    if (status)
     {
         return(status);
     }
@@ -287,13 +287,13 @@ UINT	status;
 
     /* Add an IPv4 server address to the Client list. */
     status = nx_dns_server_add(&dns_client, dns_server_address);
-	if (status)
+    if (status)
     {
         return(status);
     }
-	
-	/* Record the dns client, it will be used in socketio_xware.c  */
-	_xware_dns_client_created_ptr = &dns_client;	
+    
+    /* Record the dns client, it will be used in socketio_xware.c  */
+    _xware_dns_client_created_ptr = &dns_client;
     
     /* Output DNS Server address.  */
     LogInfo("DNS Server address: %d.%d.%d.%d\r\n",
@@ -302,5 +302,5 @@ UINT	status;
            (dns_server_address >> 8 & 0xFF),
            (dns_server_address & 0xFF));
     
-	return(0);
+    return(0);
 }
