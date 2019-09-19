@@ -19,7 +19,7 @@ tests folder includes the unit tests on threadx platform.
 git clone --recursive https://ExpressLogic@dev.azure.com/ExpressLogic/X-Ware/_git/project-X-Ware azure-c-shared-utility-test -b azure-c-shared-utility-test
 ```
 
-2. Switch ot azure-c-shared-utility-test/xware-vs folder
+2. Switch to azure-c-shared-utility-test/xware-vs folder
 
 3. Run update_lib.bat to generate the source code files and test files
 
