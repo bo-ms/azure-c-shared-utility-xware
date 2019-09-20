@@ -201,9 +201,7 @@ void socketio_destroy(CONCRETE_IO_HANDLE socket_io)
 
     if (socket_io != NULL)
     {
-        SOCKET_IO_INSTANCE* socket_io_instance = (SOCKET_IO_INSTANCE*)socket_io;
-
-        socketio_close(&(socket_io_instance -> xware_tcp_socket), NULL, NULL);
+        socketio_close(socket_io, NULL, NULL);
         free(socket_io);
     }
 }
