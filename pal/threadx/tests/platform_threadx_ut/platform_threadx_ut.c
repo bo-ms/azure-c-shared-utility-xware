@@ -8,12 +8,11 @@
 #endif
 
 #include "testrunnerswitcher.h"
-
-#undef DECLSPEC_IMPORT
-
-#pragma warning(disable: 4273)
-
-#include <winsock2.h>
+#include "umock_c/umock_c.h"
+#include "umock_c/umocktypes_charptr.h"
+#include "umock_c/umocktypes_stdint.h"
+#include "umock_c/umock_c_negative_tests.h"
+#include "azure_macro_utils/macro_utils.h"
 
 void* my_gballoc_malloc(size_t size)
 {
@@ -25,18 +24,12 @@ void my_gballoc_free(void* ptr)
     free(ptr);
 }
 
-#include "umock_c/umock_c.h"
-#include "umock_c/umocktypes_charptr.h"
-#include "umock_c/umocktypes_stdint.h"
-#include "umock_c/umock_c_negative_tests.h"
-#include "azure_macro_utils/macro_utils.h"
 
 #define ENABLE_MOCKS
 
 #include "azure_c_shared_utility/gballoc.h"
 #include "umock_c/umock_c_prod.h"
 #include "azure_c_shared_utility/strings.h"
-#include "azure_c_shared_utility/tlsio_schannel.h"
 
 #undef ENABLE_MOCKS
 
@@ -44,15 +37,6 @@ void my_gballoc_free(void* ptr)
 
 #define ENABLE_MOCKS
 
-MOCK_FUNCTION_WITH_CODE(WSAAPI, int, WSAStartup, WORD, wVersionRequested, LPWSADATA, lpWSAData)
-MOCK_FUNCTION_END(0)
-
-MOCK_FUNCTION_WITH_CODE(WSAAPI, int, WSACleanup)
-MOCK_FUNCTION_END(0)
-
-extern const IO_INTERFACE_DESCRIPTION* tlsio_xware_tls_get_interface_description(void);
-
-static const IO_INTERFACE_DESCRIPTION* TEST_IO_INTERFACE_DESCRIPTION = (const IO_INTERFACE_DESCRIPTION*)0x4444;
 
 #ifdef __cplusplus
 extern "C"
@@ -109,16 +93,6 @@ static void my_STRING_delete(STRING_HANDLE h)
     my_gballoc_free((void*)h);
 }
 
-static const IO_INTERFACE_DESCRIPTION* my_tlsio_schannel_get_interface_description(void)
-{
-    return TEST_IO_INTERFACE_DESCRIPTION;
-}
-
-static VOID my_GetSystemInfo(_Out_ LPSYSTEM_INFO lpSystemInfo)
-{
-    lpSystemInfo->wProcessorArchitecture = PROCESSOR_ARCHITECTURE_INTEL;
-}
-
 BEGIN_TEST_SUITE(platform_threadx_ut)
 
 TEST_SUITE_INITIALIZE(suite_init)
@@ -145,8 +119,6 @@ TEST_SUITE_INITIALIZE(suite_init)
     REGISTER_GLOBAL_MOCK_HOOK(STRING_construct, my_STRING_construct);
     REGISTER_GLOBAL_MOCK_HOOK(STRING_c_str, my_STRING_c_str);
     REGISTER_GLOBAL_MOCK_HOOK(STRING_delete, my_STRING_delete);
-
-    //REGISTER_GLOBAL_MOCK_RETURN(tlsio_schannel_get_interface_description, TEST_IO_INTERFACE_DESCRIPTION);
 }
 
 TEST_SUITE_CLEANUP(suite_cleanup)
@@ -176,34 +148,12 @@ TEST_FUNCTION(platform_init_success)
     int result;
 
     //arrange
-    STRICT_EXPECTED_CALL(WSAStartup(IGNORED_NUM_ARG, IGNORED_PTR_ARG));
-#ifdef USE_OPENSSL
-    STRICT_EXPECTED_CALL(tlsio_openssl_init());
-#endif
 
     //act
     result = platform_init();
 
     //assert
     ASSERT_ARE_EQUAL(int, 0, result);
-    ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
-
-    // cleanup
-}
-
-TEST_FUNCTION(platform_init_WSAStartup_0_fail)
-{
-    int result;
-
-    //arrange
-    STRICT_EXPECTED_CALL(WSAStartup(IGNORED_NUM_ARG, IGNORED_PTR_ARG)).SetReturn(1);
-
-    //act
-    result = platform_init();
-
-    //assert
-    ASSERT_ARE_NOT_EQUAL(int, 0, result);
-    ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
     // cleanup
 }
