@@ -87,7 +87,7 @@ static void                             wait_dhcp(void);
 
 #endif /* XWARE_DHCP_DISABLE  */
 
-static UINT dns_create(ULONG dns_server_address);
+static UINT dns_create();
 
 
 int platform_init(void)
@@ -193,14 +193,9 @@ ULONG   gateway_address;
            (gateway_address & 0xFF));
 
     /* Ceate dns.  */
-#ifndef XWARE_DHCP_DISABLE
-    ULONG   dns_server_address;
-    UINT dns_server_address_size = 4;
-    status = nx_dhcp_interface_user_option_retrieve(&dhcp_client, 0, NX_DHCP_OPTION_DNS_SVR, (UCHAR *)(&dns_server_address), &dns_server_address_size); 
-    status += dns_create(dns_server_address);
-#else
-    status = dns_create(XWARE_DNS_SERVER_ADDRESS);
-#endif
+    status = dns_create();
+
+    /* Check for DNS create errors.  */
     if (status)
     {
         LogError("XWARE platform initialize fail: DNS CREATE FAIL.");
@@ -259,10 +254,12 @@ ULONG   actual_status;
 #endif /* XWARE_DHCP_DISABLE  */
 
 
-static UINT dns_create(ULONG dns_server_address)
+static UINT dns_create()
 {
       
-UINT    status; 
+UINT    status;
+ULONG   dns_server_address[3];
+UINT    dns_server_address_size = 12;
  
     /* Create a DNS instance for the Client.  Note this function will create
        the DNS Client packet pool for creating DNS message packets intended
@@ -281,14 +278,23 @@ UINT    status;
     status = nx_dns_packet_pool_set(&dns_client, ip_0.nx_ip_default_packet_pool);
     if (status)
     {
+        nx_dns_delete(&dns_client);
         return(status);
     }
 #endif /* NX_DNS_CLIENT_USER_CREATE_PACKET_POOL */  
 
+#ifndef XWARE_DHCP_DISABLE
+    /* Retrieve DNS server address.  */
+    nx_dhcp_interface_user_option_retrieve(&dhcp_client, 0, NX_DHCP_OPTION_DNS_SVR, (UCHAR *)(dns_server_address), &dns_server_address_size); 
+#else
+    dns_server_address[0] = XWARE_DNS_SERVER_ADDRESS;
+#endif    
+    
     /* Add an IPv4 server address to the Client list. */
-    status = nx_dns_server_add(&dns_client, dns_server_address);
+    status = nx_dns_server_add(&dns_client, dns_server_address[0]);
     if (status)
     {
+        nx_dns_delete(&dns_client);
         return(status);
     }
     
@@ -297,10 +303,10 @@ UINT    status;
     
     /* Output DNS Server address.  */
     LogInfo("DNS Server address: %d.%d.%d.%d\r\n",
-           (dns_server_address >> 24),
-           (dns_server_address >> 16 & 0xFF),
-           (dns_server_address >> 8 & 0xFF),
-           (dns_server_address & 0xFF));
+           (dns_server_address[0] >> 24),
+           (dns_server_address[0] >> 16 & 0xFF),
+           (dns_server_address[0] >> 8 & 0xFF),
+           (dns_server_address[0] & 0xFF));
     
     return(0);
 }
