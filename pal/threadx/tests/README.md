@@ -23,7 +23,9 @@ git submodule update --recursive
 
 5. Click xware-vs.sln to open and build the projects
 
-6. Run the tests
+6. Install pcap and correct the NX_PCAP_SOURCE_NAME in azure-c-shared-utility-test\xware-vs\azure-c-shared-utility-tests\pcap\nx_pcap_network_driver.c
+
+7. Run the tests
 
 ## Unit Tests
 
