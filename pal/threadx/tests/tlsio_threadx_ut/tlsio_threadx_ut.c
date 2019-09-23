@@ -30,12 +30,6 @@ static void my_gballoc_free(void* ptr)
 #include "umock_c/umock_c_negative_tests.h"
 #include "azure_macro_utils/macro_utils.h"
 
-#if 0
-#include "wolfssl/options.h"
-#include "wolfssl/ssl.h"
-#include "wolfssl/error-ssl.h"
-#endif
-
 #include "azure_c_shared_utility/tlsio.h"
 #include "azure_c_shared_utility/socketio.h"
 #include "azure_c_shared_utility/xio.h"
@@ -71,11 +65,6 @@ static TEST_MUTEX_HANDLE g_dllByDll;
 #define TEST_DEVICE_ID      11
 #define THREADX_READ_LIMIT  5
 
-#if 0
-static WOLFSSL_METHOD* TEST_WOLFSSL_CLIENT_METHOD = (WOLFSSL_METHOD*)0x0011;
-static WOLFSSL_CTX* TEST_WOLFSSL_CTX = (WOLFSSL_CTX*)0x0012;
-static WOLFSSL* TEST_WOLFSSL = (WOLFSSL*)0x0013;
-#endif
 static const IO_INTERFACE_DESCRIPTION* TEST_SOCKETIO_INTERFACE_DESCRIPTION = (const IO_INTERFACE_DESCRIPTION*)0x0014;
 static XIO_HANDLE TEST_IO_HANDLE = (XIO_HANDLE)0x0015;
 static const unsigned char TEST_BUFFER[] = { 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xA };
@@ -92,62 +81,6 @@ static ON_IO_ERROR g_on_io_error;
 static void* g_on_io_error_context;
 //static CallbackIORecv g_threadx_cb_rcv;
 static void* g_threadx_rcv_ctx;
-
-//MOCK_FUNCTION_WITH_CODE(THREADX_API, UINT, _nxe_secure_tls_session_delete, NX_SECURE_TLS_SESSION*, tls_session);
-//MOCK_FUNCTION_END()
-
-#if 0
-MOCK_FUNCTION_WITH_CODE(WOLFSSL_API, void, wolfSSL_SetIORecv, WOLFSSL_CTX*, ctx, CallbackIORecv, cb_rcv)
-    g_wolfssl_cb_rcv = cb_rcv;
-MOCK_FUNCTION_END()
-MOCK_FUNCTION_WITH_CODE(WOLFSSL_API, void, wolfSSL_SetIOSend, WOLFSSL_CTX*, ctx, CallbackIORecv, cb_rcv)
-MOCK_FUNCTION_END()
-MOCK_FUNCTION_WITH_CODE(WOLFSSL_API, void, wolfSSL_SetIOReadCtx, WOLFSSL*, ssl, void*, ctx)
-    g_wolfssl_rcv_ctx = ctx;
-MOCK_FUNCTION_END()
-MOCK_FUNCTION_WITH_CODE(WOLFSSL_API, void, wolfSSL_SetIOWriteCtx, WOLFSSL*, ssl, void*, ctx)
-MOCK_FUNCTION_END()
-MOCK_FUNCTION_WITH_CODE(WOLFSSL_API, WOLFSSL_METHOD*, wolfTLSv1_2_client_method)
-MOCK_FUNCTION_END(TEST_WOLFSSL_CLIENT_METHOD)
-MOCK_FUNCTION_WITH_CODE(WOLFSSL_API, WOLFSSL_CTX*, wolfSSL_CTX_new, WOLFSSL_METHOD*, method)
-MOCK_FUNCTION_END(TEST_WOLFSSL_CTX)
-MOCK_FUNCTION_WITH_CODE(WOLFSSL_API, WOLFSSL*, wolfSSL_new, WOLFSSL_CTX*, ctx)
-MOCK_FUNCTION_END(TEST_WOLFSSL)
-MOCK_FUNCTION_WITH_CODE(WOLFSSL_API, void, wolfSSL_set_using_nonblock, WOLFSSL*, ssl, int, opt);
-MOCK_FUNCTION_END()
-MOCK_FUNCTION_WITH_CODE(WOLFSSL_API, int, wolfSSL_connect, WOLFSSL*, ssl)
-MOCK_FUNCTION_END(SSL_SUCCESS)
-MOCK_FUNCTION_WITH_CODE(WOLFSSL_API, int, wolfSSL_write, WOLFSSL*, ssl, const void*, data, int, len)
-MOCK_FUNCTION_END(len)
-MOCK_FUNCTION_WITH_CODE(WOLFSSL_API, int, wolfSSL_read, WOLFSSL*, ssl, void*, buff, int, len)
-MOCK_FUNCTION_END(0)
-MOCK_FUNCTION_WITH_CODE(WOLFSSL_API, void, wolfSSL_CTX_free, WOLFSSL_CTX*, ctx)
-MOCK_FUNCTION_END()
-MOCK_FUNCTION_WITH_CODE(WOLFSSL_API, void, wolfSSL_free, WOLFSSL*, ssl)
-MOCK_FUNCTION_END()
-MOCK_FUNCTION_WITH_CODE(WOLFSSL_API, void, wolfSSL_load_error_strings)
-MOCK_FUNCTION_END()
-MOCK_FUNCTION_WITH_CODE(WOLFSSL_API, int, wolfSSL_library_init)
-MOCK_FUNCTION_END(0)
-MOCK_FUNCTION_WITH_CODE(WOLFSSL_API, int, wolfSSL_CTX_load_verify_buffer, WOLFSSL_CTX*, ctx, const unsigned char*, buff, long, len, int, opt)
-MOCK_FUNCTION_END(0)
-MOCK_FUNCTION_WITH_CODE(WOLFSSL_API, int, wolfSSL_use_PrivateKey_buffer, WOLFSSL*, ssl, const unsigned char*, buff, long, len, int, opt)
-MOCK_FUNCTION_END(SSL_SUCCESS)
-MOCK_FUNCTION_WITH_CODE(WOLFSSL_API, int, wolfSSL_use_certificate_chain_buffer, WOLFSSL*, ssl, const unsigned char*, chain_buff, long, len)
-MOCK_FUNCTION_END(SSL_SUCCESS)
-MOCK_FUNCTION_WITH_CODE(WOLFSSL_API, int, wolfSSL_SetHsDoneCb, WOLFSSL*, ssl, HandShakeDoneCb, hs_cb, void*, ctx)
-    g_handshake_done_cb = hs_cb;
-    g_handshake_done_ctx = ctx;
-MOCK_FUNCTION_END(0)
-#ifdef HAVE_SECURE_RENEGOTIATION
-MOCK_FUNCTION_WITH_CODE(WOLFSSL_API, int, wolfSSL_UseSecureRenegotiation, WOLFSSL*, ssl)
-MOCK_FUNCTION_END(SSL_SUCCESS)
-#endif
-#ifdef INVALID_DEVID
-MOCK_FUNCTION_WITH_CODE(WOLFSSL_API, int, wolfSSL_SetDevId, WOLFSSL*, ssl, int, devId)
-MOCK_FUNCTION_END(WOLFSSL_SUCCESS)
-#endif
-#endif
 
 extern CONCRETE_IO_HANDLE tlsio_xware_tls_create(void* io_create_parameters);
 extern void tlsio_xware_tls_destroy(CONCRETE_IO_HANDLE tls_io);
@@ -170,13 +103,6 @@ static int my_mallocAndStrcpy_s(char** destination, const char* source)
 static void execute_threadx_open(ON_IO_OPEN_COMPLETE on_io_open_complete, void* on_io_open_complete_context)
 {
     on_io_open_complete(on_io_open_complete_context, IO_OPEN_OK);
-
-#if 0
-    if (g_handshake_done_cb != NULL)
-    {
-        g_handshake_done_cb(TEST_WOLFSSL, g_handshake_done_ctx);
-    }
-#endif
 }
 
 static void on_io_open_complete(void* context, IO_OPEN_RESULT open_result)
@@ -235,14 +161,6 @@ TEST_SUITE_INITIALIZE(suite_init)
     REGISTER_GLOBAL_MOCK_HOOK(gballoc_realloc, my_gballoc_realloc);
     REGISTER_GLOBAL_MOCK_FAIL_RETURN(gballoc_realloc, NULL);
     REGISTER_GLOBAL_MOCK_HOOK(gballoc_free, my_gballoc_free);
-
-    //REGISTER_GLOBAL_MOCK_HOOK(mallocAndStrcpy_s, my_mallocAndStrcpy_s);
-
-#if 0
-    REGISTER_GLOBAL_MOCK_RETURN(socketio_get_interface_description, TEST_SOCKETIO_INTERFACE_DESCRIPTION);
-    REGISTER_GLOBAL_MOCK_RETURN(xio_create, TEST_IO_HANDLE);
-    REGISTER_GLOBAL_MOCK_HOOK(xio_open, my_xio_open);
-#endif
 }
 
 TEST_SUITE_CLEANUP(suite_cleanup)
@@ -281,7 +199,8 @@ TEST_FUNCTION(tlsio_threadx_create_succeeds)
     //arrange
     TLSIO_CONFIG tls_io_config;
     memset(&tls_io_config, 0, sizeof(tls_io_config));
-    tls_io_config.hostname = "rtos.com";
+    tls_io_config.hostname = "global.azure-devices-provisioning.net";
+    tls_io_config.port = 8883;
     
     //act
     CONCRETE_IO_HANDLE io_handle = tlsio_xware_tls_create(&tls_io_config);
@@ -329,7 +248,8 @@ TEST_FUNCTION(tlsio_threadx_destroy_succeeds)
     //arrange
     TLSIO_CONFIG tls_io_config;
     memset(&tls_io_config, 0, sizeof(tls_io_config));
-    tls_io_config.hostname = "rtos.com";
+    tls_io_config.hostname = "global.azure-devices-provisioning.net";
+    tls_io_config.port = 8883;
     CONCRETE_IO_HANDLE io_handle = tlsio_xware_tls_create(&tls_io_config);
     umock_c_reset_all_calls();
 
@@ -372,14 +292,13 @@ TEST_FUNCTION(tlsio_threadx_open_handle_NULL_fail)
     //clean
 }
 
-#if 0
 TEST_FUNCTION(tlsio_threadx_open_succeeds)
 {
     //arrange
     TLSIO_CONFIG tls_io_config;
     memset(&tls_io_config, 0, sizeof(tls_io_config));
-    tls_io_config.hostname = "rtos.com";
-    tls_io_config.port = 80;
+    tls_io_config.hostname = "global.azure-devices-provisioning.net";
+    tls_io_config.port = 8883;
     CONCRETE_IO_HANDLE io_handle = tlsio_xware_tls_create(&tls_io_config);
     umock_c_reset_all_calls();
 
@@ -393,106 +312,6 @@ TEST_FUNCTION(tlsio_threadx_open_succeeds)
     (void)tlsio_xware_tls_close(io_handle, on_close_complete, NULL);
     tlsio_xware_tls_destroy(io_handle);
 }
-#endif
-
-#if 0
-TEST_FUNCTION(tlsio_wolfssl_open_with_cert_succeeds)
-{
-    //arrange
-    TLSIO_CONFIG tls_io_config;
-    memset(&tls_io_config, 0, sizeof(tls_io_config));
-    CONCRETE_IO_HANDLE io_handle = tlsio_wolfssl_create(&tls_io_config);
-    (void)tlsio_wolfssl_setoption(io_handle, SU_OPTION_X509_CERT, TEST_TRUSTED_CERT);
-    (void)tlsio_wolfssl_setoption(io_handle, SU_OPTION_X509_PRIVATE_KEY, TEST_TRUSTED_CERT);
-    umock_c_reset_all_calls();
-
-    //act
-    int test_result = tlsio_wolfssl_open(io_handle, on_io_open_complete, NULL, on_bytes_recv, NULL, on_error, NULL);
-
-    //assert
-    ASSERT_ARE_EQUAL(int, 0, test_result);
-
-    //clean
-    (void)tlsio_wolfssl_close(io_handle, on_close_complete, NULL);
-    tlsio_wolfssl_destroy(io_handle);
-}
-
-TEST_FUNCTION(tlsio_wolfssl_open_set_dev_id_succeeds)
-{
-    //arrange
-    TLSIO_CONFIG tls_io_config;
-    memset(&tls_io_config, 0, sizeof(tls_io_config));
-    CONCRETE_IO_HANDLE io_handle = tlsio_wolfssl_create(&tls_io_config);
-    umock_c_reset_all_calls();
-
-    STRICT_EXPECTED_CALL(wolfSSL_SetDevId(TEST_WOLFSSL, 11));
-    STRICT_EXPECTED_CALL(xio_open(TEST_IO_HANDLE, IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG));
-    STRICT_EXPECTED_CALL(wolfSSL_connect(TEST_WOLFSSL));
-
-    //act
-    int device_id = TEST_DEVICE_ID;
-    int test_result = tlsio_wolfssl_setoption(io_handle, OPTION_WOLFSSL_SET_DEVICE_ID, &device_id);
-    ASSERT_ARE_EQUAL(int, 0, test_result);
-
-    test_result = tlsio_wolfssl_open(io_handle, on_io_open_complete, NULL, on_bytes_recv, NULL, on_error, NULL);
-
-    //assert
-    ASSERT_ARE_EQUAL(int, 0, test_result);
-    ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
-
-    //clean
-    (void)tlsio_wolfssl_close(io_handle, on_close_complete, NULL);
-    tlsio_wolfssl_destroy(io_handle);
-}
-
-TEST_FUNCTION(tlsio_wolfssl_open_set_dev_id_2_succeeds)
-{
-    //arrange
-    TLSIO_CONFIG tls_io_config;
-    memset(&tls_io_config, 0, sizeof(tls_io_config));
-    CONCRETE_IO_HANDLE io_handle = tlsio_wolfssl_create(&tls_io_config);
-    umock_c_reset_all_calls();
-
-    STRICT_EXPECTED_CALL(xio_open(TEST_IO_HANDLE, IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_PTR_ARG));
-    STRICT_EXPECTED_CALL(wolfSSL_connect(TEST_WOLFSSL));
-    STRICT_EXPECTED_CALL(wolfSSL_SetDevId(TEST_WOLFSSL, 11));
-
-    //act
-    int test_result = tlsio_wolfssl_open(io_handle, on_io_open_complete, NULL, on_bytes_recv, NULL, on_error, NULL);
-    ASSERT_ARE_EQUAL(int, 0, test_result);
-
-    int device_id = TEST_DEVICE_ID;
-    test_result = tlsio_wolfssl_setoption(io_handle, OPTION_WOLFSSL_SET_DEVICE_ID, &device_id);
-
-    //assert
-    ASSERT_ARE_EQUAL(int, 0, test_result);
-    ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
-
-    //clean
-    (void)tlsio_wolfssl_close(io_handle, on_close_complete, NULL);
-    tlsio_wolfssl_destroy(io_handle);
-}
-
-TEST_FUNCTION(tlsio_wolfssl_on_handshake_done_succeed)
-{
-    //arrange
-    TLSIO_CONFIG tls_io_config;
-    memset(&tls_io_config, 0, sizeof(tls_io_config));
-    CONCRETE_IO_HANDLE io_handle = tlsio_wolfssl_create(&tls_io_config);
-    (void)tlsio_wolfssl_open(io_handle, on_io_open_complete, NULL, on_bytes_recv, NULL, on_error, NULL);
-    umock_c_reset_all_calls();
-
-    //act
-    int test_result = g_handshake_done_cb(TEST_WOLFSSL, g_handshake_done_ctx);
-
-    //assert
-    ASSERT_ARE_EQUAL(int, 0, test_result);
-
-    //clean
-    (void)tlsio_wolfssl_close(io_handle, on_close_complete, NULL);
-    tlsio_wolfssl_destroy(io_handle);
-}
-#endif
 
 TEST_FUNCTION(tlsio_threadx_close_handle_NULL_fail)
 {
@@ -507,52 +326,54 @@ TEST_FUNCTION(tlsio_threadx_close_handle_NULL_fail)
     //clean
 }
 
-#if 0
 TEST_FUNCTION(tlsio_threadx_close_succeeds)
 {
     //arrange
     TLSIO_CONFIG tls_io_config;
     memset(&tls_io_config, 0, sizeof(tls_io_config));
-    tls_io_config.hostname = "rtos.com";
+    tls_io_config.hostname = "global.azure-devices-provisioning.net";
+    tls_io_config.port = 8883;
     CONCRETE_IO_HANDLE io_handle = tlsio_xware_tls_create(&tls_io_config);
-    (void)tlsio_wolfssl_open(io_handle, on_io_open_complete, NULL, on_bytes_recv, NULL, on_error, NULL);
+    (void)tlsio_xware_tls_open(io_handle, on_io_open_complete, NULL, on_bytes_recv, NULL, on_error, NULL);
     umock_c_reset_all_calls();
 
     //act
-    int test_result = tlsio_wolfssl_close(io_handle, on_close_complete, NULL);
+    int test_result = tlsio_xware_tls_close(io_handle, on_close_complete, NULL);
 
     //assert
     ASSERT_ARE_EQUAL(int, 0, test_result);
 
     //clean
-    tlsio_wolfssl_destroy(io_handle);
+    tlsio_xware_tls_destroy(io_handle);
 }
 
-TEST_FUNCTION(tlsio_wolfssl_close_not_open_succeeds)
+TEST_FUNCTION(tlsio_threadx_close_not_open_succeeds)
 {
     //arrange
     TLSIO_CONFIG tls_io_config;
     memset(&tls_io_config, 0, sizeof(tls_io_config));
-    CONCRETE_IO_HANDLE io_handle = tlsio_wolfssl_create(&tls_io_config);
+    tls_io_config.hostname = "global.azure-devices-provisioning.net";
+    tls_io_config.port = 8883;
+    CONCRETE_IO_HANDLE io_handle = tlsio_xware_tls_create(&tls_io_config);
     umock_c_reset_all_calls();
 
     //act
-    int test_result = tlsio_wolfssl_close(io_handle, on_close_complete, NULL);
+    int test_result = tlsio_xware_tls_close(io_handle, on_close_complete, NULL);
 
     //assert
     ASSERT_ARE_NOT_EQUAL(int, 0, test_result);
 
     //clean
-    tlsio_wolfssl_destroy(io_handle);
+    tlsio_xware_tls_destroy(io_handle);
 }
 
-TEST_FUNCTION(tlsio_wolfssl_send_handle_NULL_fail)
+TEST_FUNCTION(tlsio_threadx_send_handle_NULL_fail)
 {
     //arrange
     umock_c_reset_all_calls();
 
     //act
-    int test_result = tlsio_wolfssl_send(NULL, TEST_BUFFER, TEST_BUFFER_LEN, on_send_complete, NULL);
+    int test_result = tlsio_xware_tls_send(NULL, TEST_BUFFER, TEST_BUFFER_LEN, on_send_complete, NULL);
 
     //assert
     ASSERT_ARE_NOT_EQUAL(int, 0, test_result);
@@ -560,86 +381,69 @@ TEST_FUNCTION(tlsio_wolfssl_send_handle_NULL_fail)
     //clean
 }
 
-TEST_FUNCTION(tlsio_wolfssl_send_buffer_0_fail)
+TEST_FUNCTION(tlsio_threadx_send_buffer_0_fail)
 {
     //arrange
     TLSIO_CONFIG tls_io_config;
     memset(&tls_io_config, 0, sizeof(tls_io_config));
-    CONCRETE_IO_HANDLE io_handle = tlsio_wolfssl_create(&tls_io_config);
-    (void)tlsio_wolfssl_open(io_handle, on_io_open_complete, NULL, on_bytes_recv, NULL, on_error, NULL);
+    tls_io_config.hostname = "global.azure-devices-provisioning.net";
+    tls_io_config.port = 8883;
+    CONCRETE_IO_HANDLE io_handle = tlsio_xware_tls_create(&tls_io_config);
+    (void)tlsio_xware_tls_open(io_handle, on_io_open_complete, NULL, on_bytes_recv, NULL, on_error, NULL);
     umock_c_reset_all_calls();
 
     //act
-    int test_result = tlsio_wolfssl_send(io_handle, NULL, 0, on_send_complete, NULL);
+    int test_result = tlsio_xware_tls_send(io_handle, NULL, 0, on_send_complete, NULL);
 
     //assert
     ASSERT_ARE_NOT_EQUAL(int, 0, test_result);
 
     //clean
-    (void)tlsio_wolfssl_close(io_handle, on_close_complete, NULL);
-    tlsio_wolfssl_destroy(io_handle);
+    (void)tlsio_xware_tls_close(io_handle, on_close_complete, NULL);
+    tlsio_xware_tls_destroy(io_handle);
 }
 
-TEST_FUNCTION(tlsio_wolfssl_send_not_open_fail)
+TEST_FUNCTION(tlsio_threadx_send_not_open_fail)
 {
     //arrange
     TLSIO_CONFIG tls_io_config;
     memset(&tls_io_config, 0, sizeof(tls_io_config));
-    CONCRETE_IO_HANDLE io_handle = tlsio_wolfssl_create(&tls_io_config);
+    tls_io_config.hostname = "global.azure-devices-provisioning.net";
+    tls_io_config.port = 8883;
+    CONCRETE_IO_HANDLE io_handle = tlsio_xware_tls_create(&tls_io_config);
     umock_c_reset_all_calls();
 
     //act
-    int test_result = tlsio_wolfssl_send(io_handle, TEST_BUFFER, TEST_BUFFER_LEN, on_send_complete, NULL);
+    int test_result = tlsio_xware_tls_send(io_handle, TEST_BUFFER, TEST_BUFFER_LEN, on_send_complete, NULL);
 
     //assert
     ASSERT_ARE_NOT_EQUAL(int, 0, test_result);
 
     //clean
-    tlsio_wolfssl_destroy(io_handle);
+    tlsio_xware_tls_destroy(io_handle);
 }
 
-TEST_FUNCTION(tlsio_wolfssl_send_succeeds)
+TEST_FUNCTION(tlsio_threadx_send_succeeds)
 {
     //arrange
     TLSIO_CONFIG tls_io_config;
     memset(&tls_io_config, 0, sizeof(tls_io_config));
-    CONCRETE_IO_HANDLE io_handle = tlsio_wolfssl_create(&tls_io_config);
-    (void)tlsio_wolfssl_open(io_handle, on_io_open_complete, NULL, on_bytes_recv, NULL, on_error, NULL);
+    tls_io_config.hostname = "global.azure-devices-provisioning.net";
+    tls_io_config.port = 8883;
+    CONCRETE_IO_HANDLE io_handle = tlsio_xware_tls_create(&tls_io_config);
+    (void)tlsio_xware_tls_open(io_handle, on_io_open_complete, NULL, on_bytes_recv, NULL, on_error, NULL);
     umock_c_reset_all_calls();
 
     //act
-    int test_result = tlsio_wolfssl_send(io_handle, TEST_BUFFER, TEST_BUFFER_LEN, on_send_complete, NULL);
+    int test_result = tlsio_xware_tls_send(io_handle, TEST_BUFFER, TEST_BUFFER_LEN, on_send_complete, NULL);
 
     //assert
     ASSERT_ARE_EQUAL(int, 0, test_result);
 
     //clean
-    (void)tlsio_wolfssl_close(io_handle, on_close_complete, NULL);
-    tlsio_wolfssl_destroy(io_handle);
+    (void)tlsio_xware_tls_close(io_handle, on_close_complete, NULL);
+    tlsio_xware_tls_destroy(io_handle);
 }
-
-TEST_FUNCTION(tlsio_wolfssl_send_write_returns_zero_fail)
-{
-    //arrange
-    TLSIO_CONFIG tls_io_config;
-    memset(&tls_io_config, 0, sizeof(tls_io_config));
-    CONCRETE_IO_HANDLE io_handle = tlsio_wolfssl_create(&tls_io_config);
-    (void)tlsio_wolfssl_open(io_handle, on_io_open_complete, NULL, on_bytes_recv, NULL, on_error, NULL);
-    umock_c_reset_all_calls();
-
-    STRICT_EXPECTED_CALL(wolfSSL_write(TEST_WOLFSSL, TEST_BUFFER, TEST_BUFFER_LEN)).SetReturn(0);
-
-    //act
-    int test_result = tlsio_wolfssl_send(io_handle, TEST_BUFFER, TEST_BUFFER_LEN, on_send_complete, NULL);
-
-    //assert
-    ASSERT_ARE_NOT_EQUAL(int, 0, test_result);
-
-    //clean
-    (void)tlsio_wolfssl_close(io_handle, on_close_complete, NULL);
-    tlsio_wolfssl_destroy(io_handle);
-}
-#endif 
 
 TEST_FUNCTION(tlsio_threadx_dowork_handle_NULL_succeeds)
 {
@@ -659,7 +463,8 @@ TEST_FUNCTION(tlsio_threadx_dowork_NOT_OPEN_succeeds)
     //arrange
     TLSIO_CONFIG tls_io_config;
     memset(&tls_io_config, 0, sizeof(tls_io_config));
-    tls_io_config.hostname = "rtos.com";
+    tls_io_config.hostname = "global.azure-devices-provisioning.net";
+    tls_io_config.port = 8883;
     CONCRETE_IO_HANDLE io_handle = tlsio_xware_tls_create(&tls_io_config);
     umock_c_reset_all_calls();
 
@@ -673,32 +478,27 @@ TEST_FUNCTION(tlsio_threadx_dowork_NOT_OPEN_succeeds)
     tlsio_xware_tls_destroy(io_handle);
 }
 
-#if 0
-TEST_FUNCTION(tlsio_wolfssl_dowork_succeeds)
+TEST_FUNCTION(tlsio_threadx_dowork_succeeds)
 {
     //arrange
     TLSIO_CONFIG tls_io_config;
     memset(&tls_io_config, 0, sizeof(tls_io_config));
-    CONCRETE_IO_HANDLE io_handle = tlsio_wolfssl_create(&tls_io_config);
-    (void)tlsio_wolfssl_open(io_handle, on_io_open_complete, NULL, on_bytes_recv, NULL, on_error, NULL);
+    tls_io_config.hostname = "global.azure-devices-provisioning.net";
+    tls_io_config.port = 8883;
+    CONCRETE_IO_HANDLE io_handle = tlsio_xware_tls_create(&tls_io_config);
+    (void)tlsio_xware_tls_open(io_handle, on_io_open_complete, NULL, on_bytes_recv, NULL, on_error, NULL);
     umock_c_reset_all_calls();
 
-    STRICT_EXPECTED_CALL(wolfSSL_read(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_NUM_ARG)).CopyOutArgumentBuffer_buff(&TEST_BUFFER, BUFFER_LEN).SetReturn(BUFFER_LEN);
-    STRICT_EXPECTED_CALL(on_bytes_recv(NULL, IGNORED_PTR_ARG, BUFFER_LEN));
-    STRICT_EXPECTED_CALL(wolfSSL_read(IGNORED_PTR_ARG, IGNORED_PTR_ARG, IGNORED_NUM_ARG));
-    STRICT_EXPECTED_CALL(xio_dowork(IGNORED_PTR_ARG));
-
     //act
-    tlsio_wolfssl_dowork(io_handle);
+    tlsio_xware_tls_dowork(io_handle);
 
     //assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
     //clean
-    (void)tlsio_wolfssl_close(io_handle, on_close_complete, NULL);
-    tlsio_wolfssl_destroy(io_handle);
+    (void)tlsio_xware_tls_close(io_handle, on_close_complete, NULL);
+    tlsio_xware_tls_destroy(io_handle);
 }
-#endif 
 
 TEST_FUNCTION(tlsio_threadx_get_interface_description_succeed)
 {
@@ -741,7 +541,7 @@ TEST_FUNCTION(tlsio_threadx_setoption_option_name_NULL_Fail)
     //arrange
     TLSIO_CONFIG tls_io_config;
     memset(&tls_io_config, 0, sizeof(tls_io_config));
-    tls_io_config.hostname = "rtos.com";
+    tls_io_config.hostname = "global.azure-devices-provisioning.net";
     CONCRETE_IO_HANDLE io_handle = tlsio_xware_tls_create(&tls_io_config);
     umock_c_reset_all_calls();
 
@@ -760,7 +560,7 @@ TEST_FUNCTION(tlsio_threadx_setoption_trusted_cert_succeed)
     //arrange
     TLSIO_CONFIG tls_io_config;
     memset(&tls_io_config, 0, sizeof(tls_io_config));
-    tls_io_config.hostname = "rtos.com";
+    tls_io_config.hostname = "global.azure-devices-provisioning.net";
     CONCRETE_IO_HANDLE io_handle = tlsio_xware_tls_create(&tls_io_config);
     umock_c_reset_all_calls();
 
@@ -779,7 +579,7 @@ TEST_FUNCTION(tlsio_threadx_setoption_trusted_cert_twice_succeed)
     //arrange
     TLSIO_CONFIG tls_io_config;
     memset(&tls_io_config, 0, sizeof(tls_io_config));
-    tls_io_config.hostname = "rtos.com";
+    tls_io_config.hostname = "global.azure-devices-provisioning.net";
     CONCRETE_IO_HANDLE io_handle = tlsio_xware_tls_create(&tls_io_config);
     umock_c_reset_all_calls();
 
@@ -795,198 +595,5 @@ TEST_FUNCTION(tlsio_threadx_setoption_trusted_cert_twice_succeed)
     //clean
     tlsio_xware_tls_destroy(io_handle);
 }
-
-#if 0
-#ifdef INVALID_DEVID
-TEST_FUNCTION(tlsio_wolfssl_setoption_device_id_succeed)
-{
-    //arrange
-    TLSIO_CONFIG tls_io_config;
-    memset(&tls_io_config, 0, sizeof(tls_io_config));
-    CONCRETE_IO_HANDLE io_handle = tlsio_wolfssl_create(&tls_io_config);
-    umock_c_reset_all_calls();
-
-    //act
-    int device_id = TEST_DEVICE_ID;
-    int test_result = tlsio_wolfssl_setoption(io_handle, OPTION_WOLFSSL_SET_DEVICE_ID, &device_id);
-
-    //assert
-    ASSERT_ARE_EQUAL(int, 0, test_result);
-
-    //clean
-    tlsio_wolfssl_destroy(io_handle);
-}
-
-TEST_FUNCTION(tlsio_wolfssl_setoption_device_id_fail)
-{
-    //arrange
-    TLSIO_CONFIG tls_io_config;
-    memset(&tls_io_config, 0, sizeof(tls_io_config));
-    CONCRETE_IO_HANDLE io_handle = tlsio_wolfssl_create(&tls_io_config);
-    umock_c_reset_all_calls();
-
-    STRICT_EXPECTED_CALL(wolfSSL_SetDevId(TEST_WOLFSSL, 11)).SetReturn(0);
-
-    //act
-    int device_id = TEST_DEVICE_ID;
-    int test_result = tlsio_wolfssl_setoption(io_handle, OPTION_WOLFSSL_SET_DEVICE_ID, &device_id);
-
-    //assert
-    ASSERT_ARE_NOT_EQUAL(int, 0, test_result);
-
-    //clean
-    tlsio_wolfssl_destroy(io_handle);
-}
-#endif
-
-TEST_FUNCTION(tlsio_wolfssl_on_underlying_io_bytes_received_ctx_NULL_succeess)
-{
-    //arrange
-    TLSIO_CONFIG tls_io_config;
-    memset(&tls_io_config, 0, sizeof(tls_io_config));
-    CONCRETE_IO_HANDLE io_handle = tlsio_wolfssl_create(&tls_io_config);
-    (void)tlsio_wolfssl_open(io_handle, on_io_open_complete, NULL, on_bytes_recv, NULL, on_error, NULL);
-    umock_c_reset_all_calls();
-
-    //act
-    g_on_bytes_received(NULL, TEST_BUFFER, TEST_BUFFER_LEN);
-
-    //assert
-
-    //clean
-    (void)tlsio_wolfssl_close(io_handle, on_close_complete, NULL);
-    tlsio_wolfssl_destroy(io_handle);
-}
-
-TEST_FUNCTION(tlsio_wolfssl_on_underlying_io_bytes_received_realloc_NULL_success)
-{
-    //arrange
-    TLSIO_CONFIG tls_io_config;
-    memset(&tls_io_config, 0, sizeof(tls_io_config));
-    CONCRETE_IO_HANDLE io_handle = tlsio_wolfssl_create(&tls_io_config);
-    (void)tlsio_wolfssl_open(io_handle, on_io_open_complete, NULL, on_bytes_recv, NULL, on_error, NULL);
-    umock_c_reset_all_calls();
-
-    STRICT_EXPECTED_CALL(gballoc_realloc(IGNORED_PTR_ARG, IGNORED_NUM_ARG)).SetReturn(NULL);
-
-    //act
-    g_on_bytes_received(g_on_bytes_received_context, TEST_BUFFER, TEST_BUFFER_LEN);
-
-    //assert
-
-    //clean
-    (void)tlsio_wolfssl_close(io_handle, on_close_complete, NULL);
-    tlsio_wolfssl_destroy(io_handle);
-}
-
-TEST_FUNCTION(tlsio_wolfssl_on_underlying_io_bytes_received_success)
-{
-    //arrange
-    TLSIO_CONFIG tls_io_config;
-    memset(&tls_io_config, 0, sizeof(tls_io_config));
-    CONCRETE_IO_HANDLE io_handle = tlsio_wolfssl_create(&tls_io_config);
-    (void)tlsio_wolfssl_open(io_handle, on_io_open_complete, NULL, on_bytes_recv, NULL, on_error, NULL);
-    umock_c_reset_all_calls();
-
-    STRICT_EXPECTED_CALL(gballoc_realloc(IGNORED_PTR_ARG, IGNORED_NUM_ARG));
-
-    //act
-    g_on_bytes_received(g_on_bytes_received_context, TEST_BUFFER, TEST_BUFFER_LEN);
-
-    //assert
-
-    //clean
-    (void)tlsio_wolfssl_close(io_handle, on_close_complete, NULL);
-    tlsio_wolfssl_destroy(io_handle);
-}
-
-TEST_FUNCTION(tlsio_wolfssl_on_underlying_io_error_success)
-{
-    //arrange
-    TLSIO_CONFIG tls_io_config;
-    memset(&tls_io_config, 0, sizeof(tls_io_config));
-    CONCRETE_IO_HANDLE io_handle = tlsio_wolfssl_create(&tls_io_config);
-    (void)tlsio_wolfssl_open(io_handle, on_io_open_complete, NULL, on_bytes_recv, NULL, on_error, NULL);
-    umock_c_reset_all_calls();
-
-    //act
-    g_on_io_error(g_on_io_error_context);
-
-    //assert
-
-    //clean
-    (void)tlsio_wolfssl_close(io_handle, on_close_complete, NULL);
-    tlsio_wolfssl_destroy(io_handle);
-}
-
-TEST_FUNCTION(tlsio_threadx_on_underlying_io_error_ctx_NULL_success)
-{
-    //arrange
-    TLSIO_CONFIG tls_io_config;
-    memset(&tls_io_config, 0, sizeof(tls_io_config));
-    CONCRETE_IO_HANDLE io_handle = tlsio_xware_tls_create(&tls_io_config);
-    (void)tlsio_xware_tls_open(io_handle, on_io_open_complete, NULL, on_bytes_recv, NULL, on_error, NULL);
-    umock_c_reset_all_calls();
-
-    //act
-    g_on_io_error(NULL);
-
-    //assert
-
-    //clean
-    (void)tlsio_xware_tls_close(io_handle, on_close_complete, NULL);
-    tlsio_xware_tls_destroy(io_handle);
-}
-
-TEST_FUNCTION(tlsio_wolfssl_on_io_recv_on_open_success)
-{
-    //arrange
-    char recv_buff[BUFFER_LEN];
-    TLSIO_CONFIG tls_io_config;
-    memset(&tls_io_config, 0, sizeof(tls_io_config));
-    CONCRETE_IO_HANDLE io_handle = tlsio_xware_tls_create(&tls_io_config);
-    (void)tlsio_xware_tls_open(io_handle, on_io_open_complete, NULL, on_bytes_recv, NULL, on_error, NULL);
-    umock_c_reset_all_calls();
-
-    //act
-    int test_result = g_wolfssl_cb_rcv(TEST_WOLFSSL, recv_buff, BUFFER_LEN, g_wolfssl_rcv_ctx);
-
-    //assert
-    ASSERT_ARE_EQUAL(int, WOLFSSL_CBIO_ERR_WANT_READ, test_result);
-
-    //clean
-    (void)tlsio_wolfssl_close(io_handle, on_close_complete, NULL);
-    tlsio_wolfssl_destroy(io_handle);
-}
-
-TEST_FUNCTION(tlsio_threadx_on_io_recv_timeout_success)
-{
-    //arrange
-    char recv_buff[BUFFER_LEN];
-    TLSIO_CONFIG tls_io_config;
-    memset(&tls_io_config, 0, sizeof(tls_io_config));
-    CONCRETE_IO_HANDLE io_handle = tlsio_xware_tls_create(&tls_io_config);
-    // ensure we stay in the handshake mode
-    //g_handshake_done_cb = NULL;
-    (void)tlsio_xware_tls_open(io_handle, on_io_open_complete, NULL, on_bytes_recv, NULL, on_error, NULL);
-    umock_c_reset_all_calls();
-
-    for (size_t index = 0; index < THREADX_READ_LIMIT; index++)
-    {
-        STRICT_EXPECTED_CALL(xio_dowork(IGNORED_PTR_ARG));
-    }
-
-    //act
-    //int test_result = g_wolfssl_cb_rcv(TEST_WOLFSSL, recv_buff, BUFFER_LEN, g_wolfssl_rcv_ctx);
-    int test_result = 0;
-
-    //assert
-    ASSERT_ARE_EQUAL(int, 0, test_result);
-
-    //clean
-    //(void)tlsio_wolfssl_close(io_handle, on_close_complete, NULL);
-    //tlsio_wolfssl_destroy(io_handle);
-}
-#endif
 
 END_TEST_SUITE(tlsio_threadx_ut)

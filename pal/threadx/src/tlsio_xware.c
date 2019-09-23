@@ -467,8 +467,9 @@ int tlsio_xware_tls_send(CONCRETE_IO_HANDLE tls_io, const void* buffer, size_t s
 
     int result;
 
-    if (tls_io == NULL)
+    if (tls_io == NULL || (buffer == NULL) || (size == 0))
     {
+        LogError("Invalid parameter specified tls_io: %p, buffer: %p, size: %ul", tls_io, buffer, (unsigned int)size);
         result = MU_FAILURE;
     }
     else
