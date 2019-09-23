@@ -171,9 +171,18 @@ CONCRETE_IO_HANDLE socketio_create(void* io_create_parameters)
             }
             else
             {
-                result->hostname = (char*)malloc(strlen(socket_io_config->hostname) + 1);
+                if (socket_io_config->hostname != NULL)
+                {
+                    result->hostname = (char*)malloc(strlen(socket_io_config->hostname) + 1);
+                }
+                else
+                {
+                    result->hostname = NULL;
+                }
+
                 if (result->hostname == NULL)
                 {
+                    LogError("Failure: hostname == NULL.");
                     singlylinkedlist_destroy(result->pending_io_list);
                     free(result);
                     result = NULL;
@@ -255,6 +264,7 @@ int socketio_open(CONCRETE_IO_HANDLE socket_io, ON_IO_OPEN_COMPLETE on_io_open_c
             /* First attempt to bind the client socket. */
             if (nx_tcp_client_socket_bind(&(socket_io_instance -> xware_tcp_socket), NX_ANY_PORT, NX_WAIT_FOREVER))
             {
+                nx_tcp_socket_delete(&(socket_io_instance -> xware_tcp_socket));
                 socket_io_instance->tcp_socket_connection = NULL;
                 result = MU_FAILURE;
             }
@@ -267,6 +277,8 @@ int socketio_open(CONCRETE_IO_HANDLE socket_io, ON_IO_OPEN_COMPLETE on_io_open_c
                 /* Get the Azure address.  */
                 if (xware_host_address_get(&(socket_io_instance -> ip_address), socket_io_instance -> hostname))
                 {
+                    nx_tcp_client_socket_unbind(&(socket_io_instance -> xware_tcp_socket));
+                    nx_tcp_socket_delete(&(socket_io_instance -> xware_tcp_socket));
                     socket_io_instance->tcp_socket_connection = NULL;
                     result = MU_FAILURE;
                 }
@@ -277,6 +289,8 @@ int socketio_open(CONCRETE_IO_HANDLE socket_io, ON_IO_OPEN_COMPLETE on_io_open_c
                     /* Connect to the Azure server */
                     if (nxd_tcp_client_socket_connect(&(socket_io_instance -> xware_tcp_socket), &(socket_io_instance -> ip_address), socket_io_instance -> port, NX_WAIT_FOREVER) != 0)
                     {
+                        nx_tcp_client_socket_unbind(&(socket_io_instance -> xware_tcp_socket));
+                        nx_tcp_socket_delete(&(socket_io_instance -> xware_tcp_socket));
                         socket_io_instance->tcp_socket_connection = NULL;
                         result = MU_FAILURE;
                     }
