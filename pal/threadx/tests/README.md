@@ -11,25 +11,25 @@
 git clone --recursive https://ExpressLogic@dev.azure.com/ExpressLogic/X-Ware/_git/project-X-Ware azure-c-shared-utility-test -b azure-c-shared-utility-test
 ```
 
-2. Update submodule.
+2. Update submodule:
 
 ```
 git submodule update --recursive
 ```
 
-3. Switch to azure-c-shared-utility-test/xware-vs folder
+3. Switch to azure-c-shared-utility-test/xware-vs folder.
 
-4. Run update_lib.bat to generate the source code files and test files
+4. Run update_lib.bat to generate the source code files and test files.
 
-5. Click xware-vs.sln to open and build the projects
+5. Click xware-vs.sln to open and build the projects.
 
-6. Install pcap and correct the NX_PCAP_SOURCE_NAME in azure-c-shared-utility-test\xware-vs\azure-c-shared-utility-tests\pcap\nx_pcap_network_driver.c
+6. Install pcap and correct the NX_PCAP_SOURCE_NAME in azure-c-shared-utility-test\xware-vs\azure-c-shared-utility-tests\pcap\nx_pcap_network_driver.c.
 
-7. Run the tests
+7. Run the tests.
 
-## Unit Tests
+## C-Utility Tests
 
-### C-Utility Unit Tests on ThreadX
+### Unit Tests on ThreadX
 
 |test name|test path|result|comment|
 |--|--|--|--|
@@ -37,33 +37,32 @@ git submodule update --recursive
 |azure_base32_ut|azure-c-shared-utility-xware/tests/|pass||
 |azure_base64_ut|azure-c-shared-utility-xware/tests/|pass||
 |buffer_ut|azure-c-shared-utility-xware/tests/|pass||
-|condition_ut|azure-c-shared-utility-xware/tests/|pass|unsupported yet|
-|connectionstringparser_ut|azure-c-shared-utility-xware/tests/|pass||
+|condition_ut|azure-c-shared-utility-xware/tests/|n/a|unsupported yet|
 |connectionstringparser_ut|azure-c-shared-utility-xware/tests/|pass||
 |constbuffer_array_ut|azure-c-shared-utility-xware/tests/|pass||
 |constbuffer_ut|azure-c-shared-utility-xware/tests/|pass||
 |constmap_ut|azure-c-shared-utility-xware/tests/|pass||
 |crtabstractions_ut|azure-c-shared-utility-xware/tests/|pass||
-|dns_async_ut|azure-c-shared-utility-xware/tests/|pass|unsupported yet|
+|dns_async_ut|azure-c-shared-utility-xware/tests/|n/a|unsupported yet|
 |doublylinkedlist_ut|azure-c-shared-utility-xware/tests/|pass||
 |gballoc_ut|azure-c-shared-utility-xware/tests/|pass||
 |gballoc_without_init_ut|azure-c-shared-utility-xware/tests/|pass||
 |hmacsha256_ut|azure-c-shared-utility-xware/tests/|pass||
 |http_proxy_io_ut|azure-c-shared-utility-xware/tests/|pass||
-|httpapicompact_ut|azure-c-shared-utility-xware/tests/|pass|unsupported yet|
+|httpapicompact_ut|azure-c-shared-utility-xware/tests/|n/a|unsupported yet|
 |httpapiex_ut|azure-c-shared-utility-xware/tests/|pass||
 |httpapiexsas_ut|azure-c-shared-utility-xware/tests/|pass||
 |httpheaders_ut|azure-c-shared-utility-xware/tests/|pass||
 |lock_threadx_ut|azure-c-shared-utility-xware/pal/threadx/tests/|pass|only run on threadx platfrom|
 |map_ut|azure-c-shared-utility-xware/tests/|pass||
-|memory_data_ut|azure-c-shared-utility-xware/tests/|pass|unsupported yet|
+|memory_data_ut|azure-c-shared-utility-xware/tests/|n/a|unsupported yet|
 |optionhandler_ut|azure-c-shared-utility-xware/tests/|pass||
 |platform_threadx_ut|azure-c-shared-utility-xware/pal/threadx/tests/|pass|only run on threadx platfrom|
 |refcount_ut|azure-c-shared-utility-xware/tests/|pass||
 |sastoken_ut|azure-c-shared-utility-xware/tests/|pass||
 |sha_ut|azure-c-shared-utility-xware/tests/|pass||
 |singlylinkedlist_ut|azure-c-shared-utility-xware/tests/|pass||
-|socket_async_ut|azure-c-shared-utility-xware/tests/|pass|unsupported yet|
+|socket_async_ut|azure-c-shared-utility-xware/tests/|n/a|unsupported yet|
 |socketio_threadx_ut|azure-c-shared-utility-xware/pal/threadx/tests/|pass|only run on threadx platfrom|
 |srw_lock_ut|azure-c-shared-utility-xware/tests/|pass||
 |string_token_ut|azure-c-shared-utility-xware/tests/|pass||
@@ -73,7 +72,7 @@ git submodule update --recursive
 |tickcounter_threadx_ut|azure-c-shared-utility-xware/pal/threadx/tests/|pass|only run on threadx platfrom|
 |tlsio_option_ut|azure-c-shared-utility-xware/tests/|pass||
 |tlsio_threadx_ut|azure-c-shared-utility-xware/pal/threadx/tests/|pass|only run on threadx platfrom|
-|uniqueid_ut|azure-c-shared-utility-xware/tests/|pass|unsupported yet|
+|uniqueid_ut|azure-c-shared-utility-xware/tests/|n/a|unsupported yet|
 |urlencode_ut|azure-c-shared-utility-xware/tests/|pass||
 |utf8_checker_ut|azure-c-shared-utility-xware/tests/|pass||
 |uuid_ut|azure-c-shared-utility-xware/tests/|pass||
@@ -82,7 +81,7 @@ git submodule update --recursive
 |vector_ut|azure-c-shared-utility-xware/tests/|pass||
 |ws_url_ut|azure-c-shared-utility-xware/tests/|pass||
 |wsio_ut|azure-c-shared-utility-xware/tests/|pass||
-|x509_threadx_ut|azure-c-shared-utility-xware/tests/|pass|unsupported yet|
+|x509_threadx_ut|azure-c-shared-utility-xware/tests/|n/a|unsupported yet|
 |xio_ut|azure-c-shared-utility-xware/tests/|pass||
 
 ### [Detailed test report](https://dev.azure.com/ExpressLogic/X-Ware/_git/project-X-Ware?path=%2Ftest_report%2Fc-utility_test_report.docx&version=GBazure-c-shared-utility-test).
