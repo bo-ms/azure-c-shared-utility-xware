@@ -19,7 +19,7 @@ ThreadX provide following components for SDK:
 tickcounter_xware.c.
 
 - A `socketio` implementation to provide an IO interface, abstracting from upper layers the functionality of 
-simply sending or receiving byetes, socketio_xware.c.
+simply sending or receiving bytes, socketio_xware.c.
 
 - A `tlsio` implementation to allow the SDK to communicate over TLS. The IoT Hub does not support insecure
 communication, tlsio_xware.c.
