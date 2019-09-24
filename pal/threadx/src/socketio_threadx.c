@@ -4,7 +4,7 @@
 // Copyright (c) Express Logic.  All rights reserved.
 // Please contact support@expresslogic.com for any questions or use the support portal at www.rtos.com
 
-/* This file is used for porting socketio between x-ware and azure-iot-sdk-c.  */
+/* This file is used for porting socketio between threadx and azure-iot-sdk-c.  */
 
 #include <stdlib.h>
 #include <stddef.h>
@@ -22,8 +22,8 @@
 
 #define UNABLE_TO_COMPLETE -2
 
-NX_TCP_SOCKET *_xware_tcp_socket_created_ptr;   /* XWARE TCP Socket.  */
-extern NX_DNS *_xware_dns_client_created_ptr;   /* XWARE DNS Client.  */
+NX_TCP_SOCKET *_threadx_tcp_socket_created_ptr;   /* ThreadX TCP Socket.  */
+extern NX_DNS *_threadx_dns_client_created_ptr;   /* ThreadX DNS Client.  */
 
 typedef enum IO_STATE_TAG
 {
@@ -55,7 +55,7 @@ typedef struct SOCKET_IO_INSTANCE_TAG
     int port;
     IO_STATE io_state;
     SINGLYLINKEDLIST_HANDLE pending_io_list;
-    NX_TCP_SOCKET xware_tcp_socket;   /* X-WARE.  */
+    NX_TCP_SOCKET threadx_tcp_socket;
 } SOCKET_IO_INSTANCE;
 
 /*this function will clone an option given by name and value*/
@@ -215,12 +215,12 @@ void socketio_destroy(CONCRETE_IO_HANDLE socket_io)
     }
 }
 
-int xware_host_address_get(NXD_ADDRESS *host_address, const char* host_name)
+int threadx_host_address_get(NXD_ADDRESS *host_address, const char* host_name)
 {
 
   
     /* Look up an IPv4 address over IPv4. */
-    if (nxd_dns_host_by_name_get(_xware_dns_client_created_ptr, (UCHAR *)host_name, host_address, NX_IP_PERIODIC_RATE, NX_IP_VERSION_V4))
+    if (nxd_dns_host_by_name_get(_threadx_dns_client_created_ptr, (UCHAR *)host_name, host_address, NX_IP_PERIODIC_RATE, NX_IP_VERSION_V4))
     {
         LOG(AZ_LOG_ERROR, LOG_LINE, "Failed to get host address");
         return(MU_FAILURE);
@@ -242,8 +242,8 @@ int socketio_open(CONCRETE_IO_HANDLE socket_io, ON_IO_OPEN_COMPLETE on_io_open_c
     {
 
         /* Create the socket.  */
-        _xware_tcp_socket_created_ptr = NULL;        
-        if (nx_tcp_socket_create(_nx_ip_created_ptr, &(socket_io_instance -> xware_tcp_socket), "X-WARE TCP Socket",
+        _threadx_tcp_socket_created_ptr = NULL;        
+        if (nx_tcp_socket_create(_nx_ip_created_ptr, &(socket_io_instance -> threadx_tcp_socket), "THREADX TCP Socket",
                                  NX_IP_NORMAL, NX_DONT_FRAGMENT, 0x80, 8192,
                                  NX_NULL, NX_NULL) != 0)
         {
@@ -251,7 +251,7 @@ int socketio_open(CONCRETE_IO_HANDLE socket_io, ON_IO_OPEN_COMPLETE on_io_open_c
         }
         else
         {
-            socket_io_instance->tcp_socket_connection = &(socket_io_instance -> xware_tcp_socket);
+            socket_io_instance->tcp_socket_connection = &(socket_io_instance -> threadx_tcp_socket);
         }
 
         if (socket_io_instance->tcp_socket_connection == NULL)
@@ -262,23 +262,23 @@ int socketio_open(CONCRETE_IO_HANDLE socket_io, ON_IO_OPEN_COMPLETE on_io_open_c
         {
 
             /* First attempt to bind the client socket. */
-            if (nx_tcp_client_socket_bind(&(socket_io_instance -> xware_tcp_socket), NX_ANY_PORT, NX_WAIT_FOREVER))
+            if (nx_tcp_client_socket_bind(&(socket_io_instance -> threadx_tcp_socket), NX_ANY_PORT, NX_WAIT_FOREVER))
             {
-                nx_tcp_socket_delete(&(socket_io_instance -> xware_tcp_socket));
+                nx_tcp_socket_delete(&(socket_io_instance -> threadx_tcp_socket));
                 socket_io_instance->tcp_socket_connection = NULL;
                 result = MU_FAILURE;
             }
             else
             {
-#ifdef XWARE_AZURE_IP_ADDRESS        
+#ifdef THREADX_AZURE_IP_ADDRESS        
                 socket_io_instance -> ip_address.nxd_ip_version = NX_IP_VERSION_V4;
-                socket_io_instance -> ip_address.nxd_ip_address.v4 = XWARE_AZURE_IP_ADDRESS;
+                socket_io_instance -> ip_address.nxd_ip_address.v4 = THREADX_AZURE_IP_ADDRESS;
 #else
                 /* Get the Azure address.  */
-                if (xware_host_address_get(&(socket_io_instance -> ip_address), socket_io_instance -> hostname))
+                if (threadx_host_address_get(&(socket_io_instance -> ip_address), socket_io_instance -> hostname))
                 {
-                    nx_tcp_client_socket_unbind(&(socket_io_instance -> xware_tcp_socket));
-                    nx_tcp_socket_delete(&(socket_io_instance -> xware_tcp_socket));
+                    nx_tcp_client_socket_unbind(&(socket_io_instance -> threadx_tcp_socket));
+                    nx_tcp_socket_delete(&(socket_io_instance -> threadx_tcp_socket));
                     socket_io_instance->tcp_socket_connection = NULL;
                     result = MU_FAILURE;
                 }
@@ -287,10 +287,10 @@ int socketio_open(CONCRETE_IO_HANDLE socket_io, ON_IO_OPEN_COMPLETE on_io_open_c
                 {
 
                     /* Connect to the Azure server */
-                    if (nxd_tcp_client_socket_connect(&(socket_io_instance -> xware_tcp_socket), &(socket_io_instance -> ip_address), socket_io_instance -> port, NX_WAIT_FOREVER) != 0)
+                    if (nxd_tcp_client_socket_connect(&(socket_io_instance -> threadx_tcp_socket), &(socket_io_instance -> ip_address), socket_io_instance -> port, NX_WAIT_FOREVER) != 0)
                     {
-                        nx_tcp_client_socket_unbind(&(socket_io_instance -> xware_tcp_socket));
-                        nx_tcp_socket_delete(&(socket_io_instance -> xware_tcp_socket));
+                        nx_tcp_client_socket_unbind(&(socket_io_instance -> threadx_tcp_socket));
+                        nx_tcp_socket_delete(&(socket_io_instance -> threadx_tcp_socket));
                         socket_io_instance->tcp_socket_connection = NULL;
                         result = MU_FAILURE;
                     }
@@ -306,7 +306,7 @@ int socketio_open(CONCRETE_IO_HANDLE socket_io, ON_IO_OPEN_COMPLETE on_io_open_c
                         socket_io_instance->io_state = IO_STATE_OPEN;
 
                         /* Transfer tcp socket to on_io_open_complete.  */
-                        _xware_tcp_socket_created_ptr = &(socket_io_instance -> xware_tcp_socket);
+                        _threadx_tcp_socket_created_ptr = &(socket_io_instance -> threadx_tcp_socket);
                         result = 0;
                     }
                 }
@@ -342,10 +342,10 @@ int socketio_close(CONCRETE_IO_HANDLE socket_io, ON_IO_CLOSE_COMPLETE on_io_clos
         else
         {
 
-            /* X-WARE socket close.  */
-            nx_tcp_socket_disconnect(&(socket_io_instance -> xware_tcp_socket), NX_NO_WAIT);
-            nx_tcp_client_socket_unbind(&(socket_io_instance -> xware_tcp_socket));
-            nx_tcp_socket_delete(&(socket_io_instance -> xware_tcp_socket));
+            /* THREADX socket close.  */
+            nx_tcp_socket_disconnect(&(socket_io_instance -> threadx_tcp_socket), NX_NO_WAIT);
+            nx_tcp_client_socket_unbind(&(socket_io_instance -> threadx_tcp_socket));
+            nx_tcp_socket_delete(&(socket_io_instance -> threadx_tcp_socket));
             socket_io_instance->io_state = IO_STATE_CLOSED;
 
             if (on_io_close_complete != NULL)
@@ -395,7 +395,7 @@ int socketio_send(CONCRETE_IO_HANDLE socket_io, const void* buffer, size_t size,
             else
             {
 
-                /* X-WARE send tcp data.  */
+                /* THREADX send tcp data.  */
                 int send_result = 0;
                 UINT status;
                 NX_PACKET *my_packet;
@@ -428,7 +428,7 @@ int socketio_send(CONCRETE_IO_HANDLE socket_io, const void* buffer, size_t size,
                         my_packet -> nx_packet_append_ptr += my_packet -> nx_packet_length;
 
                         /* Send out the packet.  */
-                        status = nx_tcp_socket_send(&(socket_io_instance ->xware_tcp_socket), my_packet, NX_NO_WAIT);
+                        status = nx_tcp_socket_send(&(socket_io_instance ->threadx_tcp_socket), my_packet, NX_NO_WAIT);
 
                         /* Check status.  */
                         if (status)
@@ -483,7 +483,7 @@ int socketio_send(CONCRETE_IO_HANDLE socket_io, const void* buffer, size_t size,
 void socketio_dowork(CONCRETE_IO_HANDLE socket_io)
 {
 
-/* X-WARE socket send and receive.  */
+/* THREADX socket send and receive.  */
 UINT status;
 NX_PACKET *my_packet;
 NX_PACKET *release_packet;
@@ -506,7 +506,7 @@ UINT packet_available_size;
                     break;
                 }
 
-                /* X-WARE send tcp data.  */
+                /* THREADX send tcp data.  */
                 int send_result = 0;
 
                 while(send_result < (int)pending_socket_io->size)
@@ -536,7 +536,7 @@ UINT packet_available_size;
                         my_packet -> nx_packet_append_ptr += my_packet -> nx_packet_length;
 
                         /* Send out the packet.  */
-                        status = nx_tcp_socket_send(&(socket_io_instance ->xware_tcp_socket), my_packet, NX_NO_WAIT);
+                        status = nx_tcp_socket_send(&(socket_io_instance ->threadx_tcp_socket), my_packet, NX_NO_WAIT);
 
                         /* Check status.  */
                         if (status)
@@ -592,13 +592,13 @@ UINT packet_available_size;
                 first_pending_io = singlylinkedlist_get_head_item(socket_io_instance->pending_io_list);
             }
 
-            /* X-WARE receive tcp data.  */
+            /* THREADX receive tcp data.  */
             status = NX_SUCCESS;
             while ((status == NX_SUCCESS) && (socket_io_instance->io_state == IO_STATE_OPEN))
             {
 
                 /* Receive the data.  */
-                status = nx_tcp_socket_receive(&(socket_io_instance ->xware_tcp_socket), &my_packet, NX_NO_WAIT);
+                status = nx_tcp_socket_receive(&(socket_io_instance ->threadx_tcp_socket), &my_packet, NX_NO_WAIT);
 
                 /* Check status.  */
                 if (status == NX_SUCCESS)

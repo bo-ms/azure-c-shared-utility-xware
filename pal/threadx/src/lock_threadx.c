@@ -4,8 +4,7 @@
 // Copyright (c) Express Logic.  All rights reserved.
 // Please contact support@expresslogic.com for any questions or use the support portal at www.rtos.com
 
-
-/* This file is used for porting lock between X-Ware IoT Platform and azure-iot-sdk-c.  */
+/* This file is used for porting lock between threadx and azure-iot-sdk-c.  */
 
 #include "tx_api.h"
 #include "azure_c_shared_utility/lock.h"
@@ -13,11 +12,11 @@
 
 /* Define the byte pool that Azure SDK resources will be allocated from.  */
 
-extern TX_BYTE_POOL                xware_azure_sdk_memory;
+extern TX_BYTE_POOL                threadx_azure_sdk_memory;
 
 /* Define an internal Azure porting layer mutex.  */
 
-extern TX_MUTEX                    xware_azure_sdk_protection;
+extern TX_MUTEX                    threadx_azure_sdk_protection;
 
 /* Process the create lock request.  */
 
@@ -29,7 +28,7 @@ UINT        status;
 
 
     /* Obtain the internal SDK mutex protection.  */
-    status =  tx_mutex_get(&xware_azure_sdk_protection, TX_WAIT_FOREVER);
+    status =  tx_mutex_get(&threadx_azure_sdk_protection, TX_WAIT_FOREVER);
 
     /* Check for an error.  */
     if (status != TX_SUCCESS)
@@ -40,21 +39,21 @@ UINT        status;
     }
 
     /* Allocate memory for the SDK mutex.  */
-    status =  tx_byte_allocate(&xware_azure_sdk_memory, (void **) &mutex_pointer, sizeof(TX_MUTEX), TX_NO_WAIT);
+    status =  tx_byte_allocate(&threadx_azure_sdk_memory, (void **) &mutex_pointer, sizeof(TX_MUTEX), TX_NO_WAIT);
         
     /* Check for an error.  */
     if (status != TX_SUCCESS)
     {
         
         /* Release internal mutex protection.  */
-        tx_mutex_put(&xware_azure_sdk_protection);
+        tx_mutex_put(&threadx_azure_sdk_protection);
         
         /* Return a NULL handle.  */
         return(NULL);
     }
 
     /* Now create the underlying ThreadX mutex.  */
-    status =  tx_mutex_create(mutex_pointer, "X-Ware Azure SDK Mutex", TX_NO_INHERIT);
+    status =  tx_mutex_create(mutex_pointer, "THREADX Azure SDK Mutex", TX_NO_INHERIT);
     
     /* Check for an error.  */
     if (status != TX_SUCCESS)
@@ -64,14 +63,14 @@ UINT        status;
         tx_byte_release(mutex_pointer);
         
         /* Release internal mutex protection.  */
-        tx_mutex_put(&xware_azure_sdk_protection);
+        tx_mutex_put(&threadx_azure_sdk_protection);
         
         /* Return a NULL handle.  */
         return(NULL);
     }
     
     /* Release the protection mutex.  */
-    tx_mutex_put(&xware_azure_sdk_protection);
+    tx_mutex_put(&threadx_azure_sdk_protection);
 
     /* Return the handle.  */
     return((LOCK_HANDLE)mutex_pointer);
@@ -156,7 +155,7 @@ LOCK_RESULT  Lock_Deinit(LOCK_HANDLE handle)
     }
 
     /* Obtain the internal SDK mutex protection.  */
-    tx_mutex_get(&xware_azure_sdk_protection, TX_WAIT_FOREVER);
+    tx_mutex_get(&threadx_azure_sdk_protection, TX_WAIT_FOREVER);
 
     /* Delete the mutex created by SDK.  */
     tx_mutex_delete((TX_MUTEX *) handle);
@@ -165,7 +164,7 @@ LOCK_RESULT  Lock_Deinit(LOCK_HANDLE handle)
     tx_byte_release((void *) handle);
 
     /* Release the protection mutex.  */
-    tx_mutex_put(&xware_azure_sdk_protection);
+    tx_mutex_put(&threadx_azure_sdk_protection);
 
     /* Return success.  */
     return(LOCK_OK);

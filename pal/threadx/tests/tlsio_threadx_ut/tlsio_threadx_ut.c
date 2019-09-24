@@ -35,6 +35,7 @@ static void my_gballoc_free(void* ptr)
 #include "azure_c_shared_utility/xio.h"
 #include "azure_c_shared_utility/platform.h"
 
+#include "tlsio_threadx.h"
 #include "nx_secure_tls_api.h"
 #include "nx_secure_tls.h"
 
@@ -81,15 +82,6 @@ static ON_IO_ERROR g_on_io_error;
 static void* g_on_io_error_context;
 //static CallbackIORecv g_threadx_cb_rcv;
 static void* g_threadx_rcv_ctx;
-
-extern CONCRETE_IO_HANDLE tlsio_xware_tls_create(void* io_create_parameters);
-extern void tlsio_xware_tls_destroy(CONCRETE_IO_HANDLE tls_io);
-extern int tlsio_xware_tls_open(CONCRETE_IO_HANDLE tls_io, ON_IO_OPEN_COMPLETE on_io_open_complete, void* on_io_open_complete_context, ON_BYTES_RECEIVED on_bytes_received, void* on_bytes_received_context, ON_IO_ERROR on_io_error, void* on_io_error_context);
-extern int tlsio_xware_tls_close(CONCRETE_IO_HANDLE tls_io, ON_IO_CLOSE_COMPLETE on_io_close_complete, void* callback_context);
-extern int tlsio_xware_tls_send(CONCRETE_IO_HANDLE tls_io, const void* buffer, size_t size, ON_SEND_COMPLETE on_send_complete, void* callback_context);
-extern void tlsio_xware_tls_dowork(CONCRETE_IO_HANDLE tls_io);
-extern int tlsio_xware_tls_setoption(CONCRETE_IO_HANDLE tls_io, const char* optionName, const void* value);
-extern OPTIONHANDLER_HANDLE tlsio_xware_tls_retrieveoptions(CONCRETE_IO_HANDLE handle);
 
 MU_DEFINE_ENUM_STRINGS(UMOCK_C_ERROR_CODE, UMOCK_C_ERROR_CODE_VALUES)
 
@@ -203,14 +195,14 @@ TEST_FUNCTION(tlsio_threadx_create_succeeds)
     tls_io_config.port = 8883;
     
     //act
-    CONCRETE_IO_HANDLE io_handle = tlsio_xware_tls_create(&tls_io_config);
+    CONCRETE_IO_HANDLE io_handle = tlsio_threadx_create(&tls_io_config);
 
     //assert
     ASSERT_IS_NOT_NULL(io_handle);
     ASSERT_ARE_EQUAL(unsigned_long, _nx_secure_tls_created_count, 1);
 
     //clean
-    tlsio_xware_tls_destroy(io_handle);
+    tlsio_threadx_destroy(io_handle);
 }
 
 TEST_FUNCTION(tlsio_threadx_create_config_hostname_null_fail)
@@ -220,7 +212,7 @@ TEST_FUNCTION(tlsio_threadx_create_config_hostname_null_fail)
     memset(&tls_io_config, 0, sizeof(tls_io_config));
 
     //act
-    CONCRETE_IO_HANDLE io_handle = tlsio_xware_tls_create(&tls_io_config);
+    CONCRETE_IO_HANDLE io_handle = tlsio_threadx_create(&tls_io_config);
 
     //assert
     ASSERT_IS_NULL(io_handle);
@@ -234,7 +226,7 @@ TEST_FUNCTION(tlsio_wolfssl_create_config_NULL_fail)
     //arrange
 
     //act
-    CONCRETE_IO_HANDLE io_handle = tlsio_xware_tls_create(NULL);
+    CONCRETE_IO_HANDLE io_handle = tlsio_threadx_create(NULL);
 
     //assert
     ASSERT_IS_NULL(io_handle);
@@ -250,13 +242,13 @@ TEST_FUNCTION(tlsio_threadx_destroy_succeeds)
     memset(&tls_io_config, 0, sizeof(tls_io_config));
     tls_io_config.hostname = "global.azure-devices-provisioning.net";
     tls_io_config.port = 8883;
-    CONCRETE_IO_HANDLE io_handle = tlsio_xware_tls_create(&tls_io_config);
+    CONCRETE_IO_HANDLE io_handle = tlsio_threadx_create(&tls_io_config);
     umock_c_reset_all_calls();
 
     STRICT_EXPECTED_CALL(gballoc_free(IGNORED_PTR_ARG));
 
     //act
-    tlsio_xware_tls_destroy(io_handle);
+    tlsio_threadx_destroy(io_handle);
 
     //assert
     ASSERT_ARE_EQUAL(unsigned_long, _nx_secure_tls_created_count, 0);
@@ -270,7 +262,7 @@ TEST_FUNCTION(tlsio_threadx_destroy_handle_NULL_succeeds)
     //arrange
 
     //act
-    tlsio_xware_tls_destroy(NULL);
+    tlsio_threadx_destroy(NULL);
 
     //assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -283,7 +275,7 @@ TEST_FUNCTION(tlsio_threadx_open_handle_NULL_fail)
     //arrange
 
     //act
-    int test_result = tlsio_xware_tls_open(NULL, on_io_open_complete, NULL, on_bytes_recv, NULL, on_error, NULL);
+    int test_result = tlsio_threadx_open(NULL, on_io_open_complete, NULL, on_bytes_recv, NULL, on_error, NULL);
 
     //assert
     ASSERT_ARE_NOT_EQUAL(int, 0, test_result);
@@ -299,18 +291,18 @@ TEST_FUNCTION(tlsio_threadx_open_succeeds)
     memset(&tls_io_config, 0, sizeof(tls_io_config));
     tls_io_config.hostname = "global.azure-devices-provisioning.net";
     tls_io_config.port = 8883;
-    CONCRETE_IO_HANDLE io_handle = tlsio_xware_tls_create(&tls_io_config);
+    CONCRETE_IO_HANDLE io_handle = tlsio_threadx_create(&tls_io_config);
     umock_c_reset_all_calls();
 
     //act
-    int test_result = tlsio_xware_tls_open(io_handle, on_io_open_complete, NULL, on_bytes_recv, NULL, on_error, NULL);
+    int test_result = tlsio_threadx_open(io_handle, on_io_open_complete, NULL, on_bytes_recv, NULL, on_error, NULL);
 
     //assert
     ASSERT_ARE_EQUAL(int, 0, test_result);
 
     //clean
-    (void)tlsio_xware_tls_close(io_handle, on_close_complete, NULL);
-    tlsio_xware_tls_destroy(io_handle);
+    (void)tlsio_threadx_close(io_handle, on_close_complete, NULL);
+    tlsio_threadx_destroy(io_handle);
 }
 
 TEST_FUNCTION(tlsio_threadx_close_handle_NULL_fail)
@@ -318,7 +310,7 @@ TEST_FUNCTION(tlsio_threadx_close_handle_NULL_fail)
     //arrange
 
     //act
-    int test_result = tlsio_xware_tls_close(NULL, on_close_complete, NULL);
+    int test_result = tlsio_threadx_close(NULL, on_close_complete, NULL);
 
     //assert
     ASSERT_ARE_NOT_EQUAL(int, 0, test_result);
@@ -333,18 +325,18 @@ TEST_FUNCTION(tlsio_threadx_close_succeeds)
     memset(&tls_io_config, 0, sizeof(tls_io_config));
     tls_io_config.hostname = "global.azure-devices-provisioning.net";
     tls_io_config.port = 8883;
-    CONCRETE_IO_HANDLE io_handle = tlsio_xware_tls_create(&tls_io_config);
-    (void)tlsio_xware_tls_open(io_handle, on_io_open_complete, NULL, on_bytes_recv, NULL, on_error, NULL);
+    CONCRETE_IO_HANDLE io_handle = tlsio_threadx_create(&tls_io_config);
+    (void)tlsio_threadx_open(io_handle, on_io_open_complete, NULL, on_bytes_recv, NULL, on_error, NULL);
     umock_c_reset_all_calls();
 
     //act
-    int test_result = tlsio_xware_tls_close(io_handle, on_close_complete, NULL);
+    int test_result = tlsio_threadx_close(io_handle, on_close_complete, NULL);
 
     //assert
     ASSERT_ARE_EQUAL(int, 0, test_result);
 
     //clean
-    tlsio_xware_tls_destroy(io_handle);
+    tlsio_threadx_destroy(io_handle);
 }
 
 TEST_FUNCTION(tlsio_threadx_close_not_open_succeeds)
@@ -354,17 +346,17 @@ TEST_FUNCTION(tlsio_threadx_close_not_open_succeeds)
     memset(&tls_io_config, 0, sizeof(tls_io_config));
     tls_io_config.hostname = "global.azure-devices-provisioning.net";
     tls_io_config.port = 8883;
-    CONCRETE_IO_HANDLE io_handle = tlsio_xware_tls_create(&tls_io_config);
+    CONCRETE_IO_HANDLE io_handle = tlsio_threadx_create(&tls_io_config);
     umock_c_reset_all_calls();
 
     //act
-    int test_result = tlsio_xware_tls_close(io_handle, on_close_complete, NULL);
+    int test_result = tlsio_threadx_close(io_handle, on_close_complete, NULL);
 
     //assert
     ASSERT_ARE_NOT_EQUAL(int, 0, test_result);
 
     //clean
-    tlsio_xware_tls_destroy(io_handle);
+    tlsio_threadx_destroy(io_handle);
 }
 
 TEST_FUNCTION(tlsio_threadx_send_handle_NULL_fail)
@@ -373,7 +365,7 @@ TEST_FUNCTION(tlsio_threadx_send_handle_NULL_fail)
     umock_c_reset_all_calls();
 
     //act
-    int test_result = tlsio_xware_tls_send(NULL, TEST_BUFFER, TEST_BUFFER_LEN, on_send_complete, NULL);
+    int test_result = tlsio_threadx_send(NULL, TEST_BUFFER, TEST_BUFFER_LEN, on_send_complete, NULL);
 
     //assert
     ASSERT_ARE_NOT_EQUAL(int, 0, test_result);
@@ -388,19 +380,19 @@ TEST_FUNCTION(tlsio_threadx_send_buffer_0_fail)
     memset(&tls_io_config, 0, sizeof(tls_io_config));
     tls_io_config.hostname = "global.azure-devices-provisioning.net";
     tls_io_config.port = 8883;
-    CONCRETE_IO_HANDLE io_handle = tlsio_xware_tls_create(&tls_io_config);
-    (void)tlsio_xware_tls_open(io_handle, on_io_open_complete, NULL, on_bytes_recv, NULL, on_error, NULL);
+    CONCRETE_IO_HANDLE io_handle = tlsio_threadx_create(&tls_io_config);
+    (void)tlsio_threadx_open(io_handle, on_io_open_complete, NULL, on_bytes_recv, NULL, on_error, NULL);
     umock_c_reset_all_calls();
 
     //act
-    int test_result = tlsio_xware_tls_send(io_handle, NULL, 0, on_send_complete, NULL);
+    int test_result = tlsio_threadx_send(io_handle, NULL, 0, on_send_complete, NULL);
 
     //assert
     ASSERT_ARE_NOT_EQUAL(int, 0, test_result);
 
     //clean
-    (void)tlsio_xware_tls_close(io_handle, on_close_complete, NULL);
-    tlsio_xware_tls_destroy(io_handle);
+    (void)tlsio_threadx_close(io_handle, on_close_complete, NULL);
+    tlsio_threadx_destroy(io_handle);
 }
 
 TEST_FUNCTION(tlsio_threadx_send_not_open_fail)
@@ -410,17 +402,17 @@ TEST_FUNCTION(tlsio_threadx_send_not_open_fail)
     memset(&tls_io_config, 0, sizeof(tls_io_config));
     tls_io_config.hostname = "global.azure-devices-provisioning.net";
     tls_io_config.port = 8883;
-    CONCRETE_IO_HANDLE io_handle = tlsio_xware_tls_create(&tls_io_config);
+    CONCRETE_IO_HANDLE io_handle = tlsio_threadx_create(&tls_io_config);
     umock_c_reset_all_calls();
 
     //act
-    int test_result = tlsio_xware_tls_send(io_handle, TEST_BUFFER, TEST_BUFFER_LEN, on_send_complete, NULL);
+    int test_result = tlsio_threadx_send(io_handle, TEST_BUFFER, TEST_BUFFER_LEN, on_send_complete, NULL);
 
     //assert
     ASSERT_ARE_NOT_EQUAL(int, 0, test_result);
 
     //clean
-    tlsio_xware_tls_destroy(io_handle);
+    tlsio_threadx_destroy(io_handle);
 }
 
 TEST_FUNCTION(tlsio_threadx_send_succeeds)
@@ -430,19 +422,19 @@ TEST_FUNCTION(tlsio_threadx_send_succeeds)
     memset(&tls_io_config, 0, sizeof(tls_io_config));
     tls_io_config.hostname = "global.azure-devices-provisioning.net";
     tls_io_config.port = 8883;
-    CONCRETE_IO_HANDLE io_handle = tlsio_xware_tls_create(&tls_io_config);
-    (void)tlsio_xware_tls_open(io_handle, on_io_open_complete, NULL, on_bytes_recv, NULL, on_error, NULL);
+    CONCRETE_IO_HANDLE io_handle = tlsio_threadx_create(&tls_io_config);
+    (void)tlsio_threadx_open(io_handle, on_io_open_complete, NULL, on_bytes_recv, NULL, on_error, NULL);
     umock_c_reset_all_calls();
 
     //act
-    int test_result = tlsio_xware_tls_send(io_handle, TEST_BUFFER, TEST_BUFFER_LEN, on_send_complete, NULL);
+    int test_result = tlsio_threadx_send(io_handle, TEST_BUFFER, TEST_BUFFER_LEN, on_send_complete, NULL);
 
     //assert
     ASSERT_ARE_EQUAL(int, 0, test_result);
 
     //clean
-    (void)tlsio_xware_tls_close(io_handle, on_close_complete, NULL);
-    tlsio_xware_tls_destroy(io_handle);
+    (void)tlsio_threadx_close(io_handle, on_close_complete, NULL);
+    tlsio_threadx_destroy(io_handle);
 }
 
 TEST_FUNCTION(tlsio_threadx_dowork_handle_NULL_succeeds)
@@ -450,7 +442,7 @@ TEST_FUNCTION(tlsio_threadx_dowork_handle_NULL_succeeds)
     //arrange
 
     //act
-    tlsio_xware_tls_dowork(NULL);
+    tlsio_threadx_dowork(NULL);
 
     //assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
@@ -465,17 +457,17 @@ TEST_FUNCTION(tlsio_threadx_dowork_NOT_OPEN_succeeds)
     memset(&tls_io_config, 0, sizeof(tls_io_config));
     tls_io_config.hostname = "global.azure-devices-provisioning.net";
     tls_io_config.port = 8883;
-    CONCRETE_IO_HANDLE io_handle = tlsio_xware_tls_create(&tls_io_config);
+    CONCRETE_IO_HANDLE io_handle = tlsio_threadx_create(&tls_io_config);
     umock_c_reset_all_calls();
 
     //act
-    tlsio_xware_tls_dowork(NULL);
+    tlsio_threadx_dowork(NULL);
 
     //assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
     //clean
-    tlsio_xware_tls_destroy(io_handle);
+    tlsio_threadx_destroy(io_handle);
 }
 
 TEST_FUNCTION(tlsio_threadx_dowork_succeeds)
@@ -485,19 +477,19 @@ TEST_FUNCTION(tlsio_threadx_dowork_succeeds)
     memset(&tls_io_config, 0, sizeof(tls_io_config));
     tls_io_config.hostname = "global.azure-devices-provisioning.net";
     tls_io_config.port = 8883;
-    CONCRETE_IO_HANDLE io_handle = tlsio_xware_tls_create(&tls_io_config);
-    (void)tlsio_xware_tls_open(io_handle, on_io_open_complete, NULL, on_bytes_recv, NULL, on_error, NULL);
+    CONCRETE_IO_HANDLE io_handle = tlsio_threadx_create(&tls_io_config);
+    (void)tlsio_threadx_open(io_handle, on_io_open_complete, NULL, on_bytes_recv, NULL, on_error, NULL);
     umock_c_reset_all_calls();
 
     //act
-    tlsio_xware_tls_dowork(io_handle);
+    tlsio_threadx_dowork(io_handle);
 
     //assert
     ASSERT_ARE_EQUAL(char_ptr, umock_c_get_expected_calls(), umock_c_get_actual_calls());
 
     //clean
-    (void)tlsio_xware_tls_close(io_handle, on_close_complete, NULL);
-    tlsio_xware_tls_destroy(io_handle);
+    (void)tlsio_threadx_close(io_handle, on_close_complete, NULL);
+    tlsio_threadx_destroy(io_handle);
 }
 
 TEST_FUNCTION(tlsio_threadx_get_interface_description_succeed)
@@ -506,7 +498,7 @@ TEST_FUNCTION(tlsio_threadx_get_interface_description_succeed)
     umock_c_reset_all_calls();
 
     //act
-    const IO_INTERFACE_DESCRIPTION* interface_desc =  tlsio_xware_tls_get_interface_description();
+    const IO_INTERFACE_DESCRIPTION* interface_desc =  tlsio_threadx_get_interface_description();
 
     //assert
     ASSERT_IS_NOT_NULL(interface_desc->concrete_io_retrieveoptions);
@@ -528,7 +520,7 @@ TEST_FUNCTION(tlsio_threadx_setoption_tls_io_NULL_Fail)
     umock_c_reset_all_calls();
 
     //act
-    int test_result = tlsio_xware_tls_setoption(NULL, OPTION_TRUSTED_CERT, TEST_TRUSTED_CERT);
+    int test_result = tlsio_threadx_setoption(NULL, OPTION_TRUSTED_CERT, TEST_TRUSTED_CERT);
 
     //assert
     ASSERT_ARE_NOT_EQUAL(int, 0, test_result);
@@ -542,17 +534,17 @@ TEST_FUNCTION(tlsio_threadx_setoption_option_name_NULL_Fail)
     TLSIO_CONFIG tls_io_config;
     memset(&tls_io_config, 0, sizeof(tls_io_config));
     tls_io_config.hostname = "global.azure-devices-provisioning.net";
-    CONCRETE_IO_HANDLE io_handle = tlsio_xware_tls_create(&tls_io_config);
+    CONCRETE_IO_HANDLE io_handle = tlsio_threadx_create(&tls_io_config);
     umock_c_reset_all_calls();
 
     //act
-    int test_result = tlsio_xware_tls_setoption(io_handle, NULL, TEST_TRUSTED_CERT);
+    int test_result = tlsio_threadx_setoption(io_handle, NULL, TEST_TRUSTED_CERT);
 
     //assert
     ASSERT_ARE_NOT_EQUAL(int, 0, test_result);
 
     //clean
-    tlsio_xware_tls_destroy(io_handle);
+    tlsio_threadx_destroy(io_handle);
 }
 
 TEST_FUNCTION(tlsio_threadx_setoption_trusted_cert_succeed)
@@ -561,17 +553,17 @@ TEST_FUNCTION(tlsio_threadx_setoption_trusted_cert_succeed)
     TLSIO_CONFIG tls_io_config;
     memset(&tls_io_config, 0, sizeof(tls_io_config));
     tls_io_config.hostname = "global.azure-devices-provisioning.net";
-    CONCRETE_IO_HANDLE io_handle = tlsio_xware_tls_create(&tls_io_config);
+    CONCRETE_IO_HANDLE io_handle = tlsio_threadx_create(&tls_io_config);
     umock_c_reset_all_calls();
 
     //act
-    int test_result = tlsio_xware_tls_setoption(io_handle, OPTION_TRUSTED_CERT, TEST_TRUSTED_CERT);
+    int test_result = tlsio_threadx_setoption(io_handle, OPTION_TRUSTED_CERT, TEST_TRUSTED_CERT);
 
     //assert
     ASSERT_ARE_EQUAL(int, 0, test_result);
 
     //clean
-    tlsio_xware_tls_destroy(io_handle);
+    tlsio_threadx_destroy(io_handle);
 }
 
 TEST_FUNCTION(tlsio_threadx_setoption_trusted_cert_twice_succeed)
@@ -580,20 +572,20 @@ TEST_FUNCTION(tlsio_threadx_setoption_trusted_cert_twice_succeed)
     TLSIO_CONFIG tls_io_config;
     memset(&tls_io_config, 0, sizeof(tls_io_config));
     tls_io_config.hostname = "global.azure-devices-provisioning.net";
-    CONCRETE_IO_HANDLE io_handle = tlsio_xware_tls_create(&tls_io_config);
+    CONCRETE_IO_HANDLE io_handle = tlsio_threadx_create(&tls_io_config);
     umock_c_reset_all_calls();
 
     //act
-    int test_result = tlsio_xware_tls_setoption(io_handle, OPTION_TRUSTED_CERT, TEST_TRUSTED_CERT);
+    int test_result = tlsio_threadx_setoption(io_handle, OPTION_TRUSTED_CERT, TEST_TRUSTED_CERT);
     ASSERT_ARE_EQUAL(int, 0, test_result);
 
-    test_result = tlsio_xware_tls_setoption(io_handle, OPTION_TRUSTED_CERT, TEST_TRUSTED_CERT);
+    test_result = tlsio_threadx_setoption(io_handle, OPTION_TRUSTED_CERT, TEST_TRUSTED_CERT);
 
     //assert
     ASSERT_ARE_EQUAL(int, 0, test_result);
 
     //clean
-    tlsio_xware_tls_destroy(io_handle);
+    tlsio_threadx_destroy(io_handle);
 }
 
 END_TEST_SUITE(tlsio_threadx_ut)

@@ -182,7 +182,7 @@ TEST_FUNCTION(platform_get_platform_info_success)
 
     //assert
     ASSERT_IS_NOT_NULL(platform);
-    ASSERT_ARE_EQUAL(char_ptr, "[STRING_construct(\"(native; ThreadX; XWARE)\")]", umock_c_get_actual_calls());
+    ASSERT_ARE_EQUAL(char_ptr, "[STRING_construct(\"(native; ThreadX; undefined)\")]", umock_c_get_actual_calls());
 
     // cleanup
     STRING_delete(platform);

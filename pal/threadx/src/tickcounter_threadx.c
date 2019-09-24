@@ -4,7 +4,7 @@
 // Copyright (c) Express Logic.  All rights reserved.
 // Please contact support@expresslogic.com for any questions or use the support portal at www.rtos.com
 
-/* This file is used for porting tickcounter between x-ware and azure-iot-sdk-c.  */
+/* This file is used for porting tickcounter between threadx and azure-iot-sdk-c.  */
 
 #include <stdlib.h>
 #include <stdint.h>

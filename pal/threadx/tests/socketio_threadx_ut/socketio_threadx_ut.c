@@ -102,7 +102,7 @@ typedef struct SOCKET_IO_INSTANCE_TAG
     int port;
     IO_STATE io_state;
     SINGLYLINKEDLIST_HANDLE pending_io_list;
-    NX_TCP_SOCKET xware_tcp_socket;   /* X-WARE.  */
+    NX_TCP_SOCKET threadx_tcp_socket;
 } SOCKET_IO_INSTANCE;
 
 LIST_ITEM_HANDLE my_singlylinkedlist_get_head_item(SINGLYLINKEDLIST_HANDLE list)
@@ -588,9 +588,9 @@ UCHAR tcp_data[20] = { 0x18, 0x3e, 0x00, 0x50, 0x62, 0xf3, 0xa5, 0x46,
     nx_packet_allocate(&pool_0, &packet_ptr, NX_TCP_PACKET, NX_NO_WAIT);
     nx_packet_data_append(packet_ptr, tcp_data, sizeof(tcp_data), &pool_0, NX_NO_WAIT);
     packet_ptr -> nx_packet_queue_next = (NX_PACKET *)0xBBBBBBBB;
-    socket_io_instance -> xware_tcp_socket.nx_tcp_socket_receive_queue_head = packet_ptr;
-    socket_io_instance -> xware_tcp_socket.nx_tcp_socket_receive_queue_tail = packet_ptr;
-    socket_io_instance -> xware_tcp_socket.nx_tcp_socket_receive_queue_count++;
+    socket_io_instance -> threadx_tcp_socket.nx_tcp_socket_receive_queue_head = packet_ptr;
+    socket_io_instance -> threadx_tcp_socket.nx_tcp_socket_receive_queue_tail = packet_ptr;
+    socket_io_instance -> threadx_tcp_socket.nx_tcp_socket_receive_queue_count++;
 
     // reset bytes received flag
     bytes_received = 0;
