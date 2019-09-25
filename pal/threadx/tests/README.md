@@ -11,21 +11,16 @@
 git clone --recursive https://ExpressLogic@dev.azure.com/ExpressLogic/X-Ware/_git/project-X-Ware azure-c-shared-utility-test -b azure-c-shared-utility-test
 ```
 
-2. Update submodule:
+2. Switch to azure-c-shared-utility-test/xware-vs folder.
 
-```
-git submodule update --recursive
-```
+3. Run update_lib.bat to generate the source code files and test files.
 
-3. Switch to azure-c-shared-utility-test/xware-vs folder.
+4. Click xware-vs.sln to open and build the projects.
 
-4. Run update_lib.bat to generate the source code files and test files.
+5. Run tests.
 
-5. Click xware-vs.sln to open and build the projects.
-
-6. Install pcap and correct the NX_PCAP_SOURCE_NAME in azure-c-shared-utility-test\xware-vs\azure-c-shared-utility-tests\pcap\nx_pcap_network_driver.c.
-
-7. Run the tests.
+Note: If you run platfrom_threadx_ut, socketio_threadx_ut and tlsio_threadx_ut, please make sure that pcap is installed and the
+NX_PCAP_SOURCE_NAME is correct in azure-c-shared-utility-test\xware-vs\azure-c-shared-utility-tests\pcap\nx_pcap_network_driver.c.
 
 ## C-Utility Tests
 
@@ -84,10 +79,10 @@ git submodule update --recursive
 |x509_threadx_ut|azure-c-shared-utility-xware/tests/|n/a|unsupported yet|
 |xio_ut|azure-c-shared-utility-xware/tests/|pass||
 
-### [Detailed test report](https://dev.azure.com/ExpressLogic/X-Ware/_git/project-X-Ware?path=%2Ftest_report%2Fc-utility_test_report.docx&version=GBazure-c-shared-utility-test).
+### [Detail test report](https://dev.azure.com/ExpressLogic/X-Ware/_git/project-X-Ware?path=%2Ftest_report%2Fc-utility_test_report.docx&version=GBazure-c-shared-utility-test).
 
 
 ## Porting to new devices
 
-Instructions for porting the Azure IoT C SDK to new devices are located
+Instructions for porting the Azure IoT C SDK to ThreadX devices are located
 [here](https://github.com/Azure/azure-c-shared-utility/blob/master/devdoc/porting_guide.md).
